@@ -1,5 +1,5 @@
 // Shared UI pieces used by several pages.
-import { h, t, localized, getState, setState, currentLang } from './core.js';
+import { h, t, localized, getState, setState, currentLang, translator } from './core.js';
 import { DB, isUserId } from './data.js';
 import { glowBackground, paleHex, simulateHex, textOn } from './color.js';
 
@@ -133,11 +133,28 @@ export function bottomSheet(content, { onClose } = {}) {
 }
 
 // Full-screen big message card to show someone nearby. Tap ⟲ to flip it toward them.
+// `lines` may be a function (tr => [...lines]); then a row of 6 language buttons under ⟲ switches the
+// card's text only (not the app), so it can be shown to someone from another country.
+const CARD_LANGS = { ja: '日本語', en: 'English', ko: '한국어', 'zh-Hans': '简体', 'zh-Hant': '繁體', id: 'Indonesia' };
 export function messageCard(lines, { tone = 'calm', note } = {}) {
   let flipped = false;
-  const card = h('div', { class: `msg-card tone-${tone}` },
-    lines.map((l, i) => h(i === 0 ? 'p' : 'p', { class: i === 0 ? 'msg-main' : 'msg-sub' }, l)),
-    note ? h('p', { class: 'msg-note' }, note) : null);
+  const card = h('div', { class: `msg-card tone-${tone}` });
+  const fill = (list, code) => {
+    card.replaceChildren(...list.map((l, i) => h('p', { class: i === 0 ? 'msg-main' : 'msg-sub' }, l)), ...(note ? [h('p', { class: 'msg-note' }, note)] : []));
+    card.lang = code;   // right CJK glyphs for the chosen language
+  };
+  const byLang = typeof lines === 'function';
+  fill(byLang ? lines(t) : lines, currentLang());
   const flip = h('button', { class: 'btn ghost msg-flip', onclick: () => { flipped = !flipped; card.classList.toggle('flipped', flipped); } }, '⟲ ' + t('common.flip'));
-  return h('div', { class: 'msg-wrap' }, card, flip);
+  if (!byLang) return h('div', { class: 'msg-wrap' }, card, flip);
+  const row = h('div', { class: 'msg-langs', role: 'group', 'aria-label': t('nav.language') });
+  for (const [code, label] of Object.entries(CARD_LANGS)) {
+    row.append(h('button', { class: 'btn ghost msg-lang' + (code === currentLang() ? ' on' : ''), lang: code, 'aria-pressed': String(code === currentLang()),
+      onclick: async e => {
+        const btn = e.currentTarget;   // (gone after the await)
+        fill(lines(await translator(code)), code);
+        row.querySelectorAll('.msg-lang').forEach(b => { const on = b === btn; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); });
+      } }, label));
+  }
+  return h('div', { class: 'msg-wrap' }, card, flip, row);
 }

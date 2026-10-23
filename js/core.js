@@ -3,7 +3,7 @@
 export const APP = {
   code: 'CVDp-h',
   title: 'CVDp-h', // release title: TBD
-  version: '0.2.8',
+  version: '0.2.9',
   build: '2026-10-24',
   author: 'BlackDream feat. ChromeBread(Dead Beats)',
   hashtag: '#CVDph',
@@ -121,10 +121,25 @@ export function detectLang() {
 let dict = {}, fallback = {}, lang = 'en';
 export function currentLang() { return lang; }
 
-export async function loadLang(code) {
-  const get = async c => {
-    try { const r = await fetch(`i18n/${c}.json`); return r.ok ? r.json() : {}; } catch { return {}; }
+const get = async c => {
+  try { const r = await fetch(`i18n/${c}.json`); return r.ok ? r.json() : {}; } catch { return {}; }
+};
+
+// Text in another language without switching the app (message cards shown to someone from abroad).
+const others = {};
+export async function translator(code) {
+  if (code === lang) return t;
+  others[code] ||= code === 'en' ? Promise.resolve(fallback) : get(code);
+  const d = await others[code];
+  return (key, vars) => {
+    let s = d[key] ?? fallback[key] ?? key;
+    if (Array.isArray(s)) return s;
+    if (vars) s = s.replace(/\{(\w+)\}/g, (_, k) => (vars[k] ?? ''));
+    return s;
   };
+}
+
+export async function loadLang(code) {
   if (!Object.keys(fallback).length) fallback = await get('en');
   dict = code === 'en' ? fallback : await get(code);
   lang = code;

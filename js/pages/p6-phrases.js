@@ -8,10 +8,11 @@ export default {
   render(root) {
     const list = () => root.replaceChildren(h('div', { class: 'page' },
       h('p', { class: 'fine' }, t('p6.intro')),
-      h('div', { class: 'phrase-grid' }, t('p6.phrases').map(p =>
-        h('button', { class: 'phrase', onclick: () => show(p) }, p)))));
-    const show = p => root.replaceChildren(h('div', { class: 'page full' },
-      messageCard([p]),
+      h('div', { class: 'phrase-grid' }, t('p6.phrases').map((p, i) =>
+        h('button', { class: 'phrase', onclick: () => show(i) }, p)))));
+    // by number, so the language buttons can show the same phrase in another language
+    const show = i => root.replaceChildren(h('div', { class: 'page full' },
+      messageCard(tr => [tr('p6.phrases')[i]]),
       h('button', { class: 'btn ghost', onclick: list }, '← ' + t('common.back'))));
     list();
   },

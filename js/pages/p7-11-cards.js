@@ -8,7 +8,8 @@ const card = (id, tone, caution = false) => ({
   id,
   debug: true,
   render(root) {
-    const lines = caution ? [...t(`p${id}.lines`), t('cards.gentle')] : t(`p${id}.lines`);
+    // a function of the translator, so the language buttons under the card can switch its text
+    const lines = tr => (caution ? [...tr(`p${id}.lines`), tr('cards.gentle')] : tr(`p${id}.lines`));
     // the way back is small and tucked in a corner, so the other person won't tap it by accident
     const showCard = () => root.replaceChildren(h('div', { class: 'page full' },
       caution ? h('button', { class: 'btn ghost card-back', onclick: showNote }, t('cards.toNote')) : null,

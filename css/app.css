@@ -429,3 +429,7 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
 .beta-link { min-height: 32px; padding: 2px 10px; font-size: .85rem; margin-left: 6px; }
 .ed-more { border-top: 1px solid var(--line); padding-top: 12px; }
 .ed-more-btn { min-height: 34px; padding: 4px 12px; font-size: .85rem; margin-top: 6px; }
+/* message cards: 6 language buttons in one row (the card's text only) */
+.msg-langs { display: flex; gap: 4px; }
+.msg-lang { flex: 1 1 auto; min-width: 0; min-height: 40px; padding: 4px 5px; font-size: clamp(.68rem, 3vw, .9rem); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.msg-lang.on { background: var(--accent); color: #0b0b0e; border-color: var(--accent); }
