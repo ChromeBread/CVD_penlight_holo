@@ -1,4 +1,10 @@
 {
+  "nav.menuHint": "ここをタップすると、使い方・ゲーム・サイクル表など、ほかのページを開けます",
+  "ed.files": "ファイルで読み込む・保存する",
+  "ed.filesHelp": "表a・表bと同じ形式のCSVファイル（.csv / .txt）が使えます。Excel・Googleスプレッドシート・メモ帳などで作れます。Excelで保存するときは「CSV UTF-8（コンマ区切り）」を選んでください。読み込んだ内容はこの端末のブラウザに保存されます。",
+  "ed.openFile": "ファイルを読み込む",
+  "ed.saveFile": "ファイルに保存",
+  "ed.template": "ひな形をダウンロード",
   "page.17": "ライブデータ確認",
   "page.18": "ライブデータエディター",
   "p2.use.17": "最初から入っているライブ・ペンライトのデータと、ページ18で自分で作ったデータを一覧で見られます。",
@@ -89,7 +95,7 @@
   "cycle.prev": "前へ",
   "cycle.limit": "色が多いため、最初の{n}色だけ表示しています。",
   "p14.surprise": "サプライズ参戦メンバーを表示",
-  "p14.surpriseNote": "通常はOFFです。data/a_fes_members.csv の surprise 列が yes のメンバーが対象です。",
+  "p14.surpriseNote": "通常はOFFです。data/builtin/a_fes_members.csv の surprise 列が yes のメンバーが対象です。",
   "p14.hits": "半円の当たり判定を表示",
   "p14.hitOpacity": "当たり判定の透過度",
   "p14.hitNote": "0%〜95%（初期値60%）。数字が大きいほど薄く表示します。",
@@ -357,7 +363,7 @@
   "p14.col.battery": "電池",
   "p14.col.note": "メモ",
   "p14.noSpecs": "まだ登録がありません。",
-  "p14.specsNote": "灰色の行は未確認の情報です。data/c_penlight_specs.csv で追加・修正できます。",
+  "p14.specsNote": "灰色の行は未確認の情報です。data/builtin/c_penlight_specs.csv で追加・修正できます。",
 
   "pc.white": "ホワイト", "pc.red": "レッド", "pc.orange": "オレンジ", "pc.yellow": "イエロー",
   "pc.lime": "ライム", "pc.green": "グリーン", "pc.emerald": "エメラルド", "pc.lightblue": "ライトブルー",

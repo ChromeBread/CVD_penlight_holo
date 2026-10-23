@@ -1,7 +1,7 @@
 // Page 17: view all live (stage) and penlight data. Page 18: edit your own live / penlight data.
 // Built-in data (the CSV tables) is read-only here; user data lives in this browser (see data.js).
 import { h, t, toast, localized, formatDate } from '../core.js';
-import { DB, parseCsv, getUserData, saveUserData, isUserId, newUserId, hexForKey } from '../data.js';
+import { DB, parseCsv, getUserData, saveUserData, isUserId, newUserId, hexForKey, normalizeDate } from '../data.js';
 import { paleHex, textOn } from '../color.js';
 import { memberName, slotColorName, field } from '../ui.js';
 
@@ -82,7 +82,7 @@ function importStages(text) {
   const groups = new Map();
   for (const r of rows) {
     const id = r.stage_id || 'imported';
-    if (!groups.has(id)) groups.set(id, { id: newUserId(), name: r.stage_name_ja || r.stage_name_en || r.stage_id || 'Imported', date: r.date || '', members: [] });
+    if (!groups.has(id)) groups.set(id, { id: newUserId(), name: r.stage_name_ja || r.stage_name_en || r.stage_id || 'Imported', date: normalizeDate(r.date), members: [] });
     const name = r.name_ja || r.name_en || Object.entries(r).find(([k, v]) => k.startsWith('name_') && v)?.[1] || '';
     if (name && r.color_key) groups.get(id).members.push({ mark: r.oshi_mark || '', name, color_key: r.color_key, hex: r.color_hex || '', surprise: r.surprise === 'yes' });
   }
@@ -106,6 +106,21 @@ const exportStages = stages => csv(HEAD_A, stages.flatMap(s => s.members.map((m,
   name_en: m.name, name_ja: m.name, oshi_mark: m.mark, color_key: m.color_key, color_hex: m.hex, surprise: m.surprise ? 'yes' : 'no' }))));
 const exportPenlights = pens => csv(HEAD_B, pens.flatMap(p => p.colors.map((c, i) => ({
   penlight_id: p.id, penlight_name: p.name, order: i + 1, color_key: c.color_key, color_name_en: c.name, color_name_ja: c.name, color_hex: c.hex }))));
+
+// ---------- files: the same CSV as tables a / b, so a spreadsheet or text editor can make them ----------
+// A file with penlight_id / order columns is a penlight table, anything else a live table.
+const BOM = String.fromCharCode(0xfeff);
+const firstLine = text => text.replace(BOM, '').split(/\r?\n/)[0];
+const isPenlightCsv = text => /\b(penlight_id|order)\b/.test(firstLine(text)) && !/\bstage_id\b/.test(firstLine(text));
+
+// Excel opens UTF-8 CSV correctly only with a BOM.
+function download(name, text) {
+  const url = URL.createObjectURL(new Blob([BOM + text], { type: 'text/csv;charset=utf-8' }));
+  const a = h('a', { href: url, download: name });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+const today = () => new Date().toISOString().slice(0, 10).replace(/-/g, '');
 
 // built-in data -> an editable user copy (the original stays as it is)
 function copyBuiltInStage(id) {
@@ -168,6 +183,7 @@ export const p18 = {
             } }, t('ed.delete')))))) : h('p', { class: 'fine' }, t('ld.none')),
         h('button', { class: 'btn', onclick: () => (live ? editStage({ id: newUserId(), name: '', date: '', members: [{ mark: '', name: '', color_key: '', hex: '' }] }, true) : editPen({ id: newUserId(), name: '', colors: [{ color_key: '', name: '', hex: '#888888' }] }, true)) }, t('ed.new')),
         h('div', { class: 'row' }, pick, h('button', { class: 'btn ghost', onclick: () => (live ? editStage(copyBuiltInStage(pick.value), true) : editPen(copyBuiltInPenlight(pick.value), true)) }, t('ed.copyFrom'))),
+        fileBox(live, items),
         h('details', null, h('summary', null, t('ed.import')),
           textBox(live ? t('ed.importHelp') : t('ed.importHelpPen'), text => {
             const got = live ? importStages(text) : importPenlights(text);
@@ -176,6 +192,36 @@ export const p18 = {
             list();
           })),
         items.length ? h('details', null, h('summary', null, t('ed.export')), exportBox(live ? exportStages(items) : exportPenlights(items))) : null));
+    }
+
+    // read CSV / TXT files (lives or penlights, found from the header), save yours as a file, get a blank template
+    function fileBox(live, items) {
+      const input = h('input', { type: 'file', accept: '.csv,.txt,text/csv,text/plain', multiple: true, hidden: true });
+      input.addEventListener('change', async () => {
+        let stages = 0, pens = 0;
+        const d = getUserData();
+        for (const file of input.files) {
+          const text = await file.text();
+          const got = isPenlightCsv(text) ? importPenlights(text) : importStages(text);
+          if (!got?.length) { toast(`${file.name}: ${t('ed.importFail')}`); continue; }
+          if (isPenlightCsv(text)) { d.penlights.push(...got); pens += got.length; } else { d.stages.push(...got); stages += got.length; }
+        }
+        input.value = '';
+        if (!stages && !pens) return;
+        saveUserData(d);
+        toast(t('ed.imported', { n: stages + pens }));
+        if (pens && !stages) tab = 'pen'; else if (stages && !pens) tab = 'live';
+        list();
+      });
+      const kind = live ? 'lives' : 'penlights';
+      return h('div', { class: 'card stack' },
+        h('h3', null, t('ed.files')),
+        h('p', { class: 'fine' }, t('ed.filesHelp')),
+        input,
+        h('button', { class: 'btn', onclick: () => input.click() }, '📂 ' + t('ed.openFile')),
+        h('div', { class: 'row' },
+          h('button', { class: 'btn ghost', disabled: !items.length, onclick: () => download(`cvdph-${kind}-${today()}.csv`, live ? exportStages(items) : exportPenlights(items)) }, '💾 ' + t('ed.saveFile')),
+          h('a', { class: 'btn ghost', href: `data/templates/${live ? 'a' : 'b'}_template.csv`, download: `cvdph-${kind}-template.csv` }, '📄 ' + t('ed.template'))));
     }
 
     function rowsEditor(rows, cols, make) {

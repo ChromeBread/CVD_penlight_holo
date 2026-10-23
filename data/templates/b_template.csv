@@ -1,0 +1,4 @@
+﻿penlight_id,penlight_name,order,color_key,color_name_en,color_name_ja,color_hex
+my-penlight,My penlight,1,red,Red,レッド,#FF3333
+my-penlight,My penlight,2,blue,Blue,ブルー,#3333FF
+my-penlight,My penlight,3,lightgreen,Light Green,ライトグリーン,#99FF66

@@ -1,4 +1,10 @@
 {
+  "nav.menuHint": "點這裡可以開啟其他頁面：使用方法、遊戲、循環表等",
+  "ed.files": "用檔案讀取・儲存",
+  "ed.filesHelp": "可以使用與表 a、表 b 相同格式的 CSV 檔案（.csv / .txt）。可用 Excel、Google 試算表、記事本等製作。用 Excel 儲存時請選擇「CSV UTF-8（逗號分隔）」。讀取的內容會儲存在本裝置的瀏覽器中。",
+  "ed.openFile": "讀取檔案",
+  "ed.saveFile": "儲存為檔案",
+  "ed.template": "下載範本",
   "page.17": "演唱會資料查看",
   "page.18": "演唱會資料編輯器",
   "p2.use.17": "可以查看內建的演唱會和螢光棒資料，以及你在第18頁自己製作的資料。",
@@ -89,7 +95,7 @@
   "cycle.prev": "上一個",
   "cycle.limit": "顏色太多，只顯示前 {n} 種。",
   "p14.surprise": "顯示驚喜登場成員",
-  "p14.surpriseNote": "預設關閉。對象是 data/a_fes_members.csv 中 surprise 欄為 yes 的成員。",
+  "p14.surpriseNote": "預設關閉。對象是 data/builtin/a_fes_members.csv 中 surprise 欄為 yes 的成員。",
   "p14.hits": "顯示半圓的觸控判定範圍",
   "p14.hitOpacity": "判定範圍透明度",
   "p14.hitNote": "0%~95%（預設 60%）。數字越大顯示越淡。",
@@ -357,7 +363,7 @@
   "p14.col.battery": "電池",
   "p14.col.note": "備註",
   "p14.noSpecs": "尚無登錄。",
-  "p14.specsNote": "灰色列為未確認資訊。可在 data/c_penlight_specs.csv 中新增或修改。",
+  "p14.specsNote": "灰色列為未確認資訊。可在 data/builtin/c_penlight_specs.csv 中新增或修改。",
 
   "pc.white": "白色", "pc.red": "紅色", "pc.orange": "橙色", "pc.yellow": "黃色",
   "pc.lime": "萊姆色", "pc.green": "綠色", "pc.emerald": "翡翠綠", "pc.lightblue": "淺藍",

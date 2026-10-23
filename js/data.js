@@ -25,6 +25,12 @@ export function parseCsv(text) {
   return clean.slice(1).map(r => Object.fromEntries(head.map((k, i) => [k, (r[i] ?? '').trim()])));
 }
 
+// "2026/3/8" (as Excel saves it) -> "2026-03-08"
+export function normalizeDate(v) {
+  const m = /^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/.exec(String(v || '').trim());
+  return m ? `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}` : (v || '');
+}
+
 async function loadCsv(path) {
   try {
     const r = await fetch(path, { cache: 'no-cache' });
@@ -38,12 +44,12 @@ const BASE = { members: [], colors: [] };
 
 export async function loadData() {
   const [members, colors, specs, contributors] = await Promise.all([
-    loadCsv('data/a_fes_members.csv'),
-    loadCsv('data/b_penlight_colors.csv'),
-    loadCsv('data/c_penlight_specs.csv'),
-    loadCsv('data/contributors.csv'),
+    loadCsv('data/builtin/a_fes_members.csv'),
+    loadCsv('data/builtin/b_penlight_colors.csv'),
+    loadCsv('data/builtin/c_penlight_specs.csv'),
+    loadCsv('data/builtin/contributors.csv'),
   ]);
-  BASE.members = members;
+  BASE.members = members.map(m => ({ ...m, date: normalizeDate(m.date) }));
   BASE.colors = colors;
   DB.specs = specs;
   DB.contributors = contributors;

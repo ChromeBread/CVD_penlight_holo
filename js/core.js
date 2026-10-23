@@ -3,7 +3,7 @@
 export const APP = {
   code: 'CVDp-h',
   title: 'CVDp-h', // release title: TBD
-  version: '0.2.0',
+  version: '0.2.1',
   build: '2026-10-23',
   author: 'BlackDream feat. ChromeBread(Dead Beats)',
   hashtag: '#CVDph',
@@ -51,6 +51,7 @@ const defaults = {
   lockPos: null,   // page 1 lock button {x, y} as fractions
   lockSize: 72,    // px, changeable in debug mode
   cycleZoom: 100,  // page 15 chart size in %
+  menuSeen: false, // first-visit hint pointing at the menu button
   overlayOpacity: 45,
   checklist: {},
 };

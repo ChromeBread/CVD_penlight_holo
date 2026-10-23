@@ -1,6 +1,6 @@
 // Offline support: everything is cached on first visit, so the app works
 // inside the venue without signal. Data CSVs are refreshed when online.
-const VERSION = 'cvdph-0.2.0';
+const VERSION = 'cvdph-0.2.1';
 const FILES = [
   './', 'index.html', 'manifest.webmanifest', 'css/app.css',
   'js/app.js', 'js/core.js', 'js/data.js', 'js/color.js', 'js/penlight.js', 'js/ui.js',
@@ -8,7 +8,8 @@ const FILES = [
   'js/pages/p5-quiz.js', 'js/pages/p6-phrases.js', 'js/pages/p7-11-cards.js', 'js/pages/p12-test.js',
   'js/pages/p13-about.js', 'js/pages/p14-debug.js', 'js/pages/p15-16-cycle.js', 'js/pages/p17-18-livedata.js',
   'i18n/en.json', 'i18n/ja.json', 'i18n/ko.json', 'i18n/zh-Hans.json', 'i18n/zh-Hant.json', 'i18n/id.json',
-  'data/a_fes_members.csv', 'data/b_penlight_colors.csv', 'data/c_penlight_specs.csv', 'data/contributors.csv',
+  'data/builtin/a_fes_members.csv', 'data/builtin/b_penlight_colors.csv', 'data/builtin/c_penlight_specs.csv', 'data/builtin/contributors.csv',
+  'data/templates/a_template.csv', 'data/templates/b_template.csv',
   'icons/icon.svg', 'icons/icon-180.png', 'icons/icon-192.png', 'icons/icon-512.png',
 ];
 

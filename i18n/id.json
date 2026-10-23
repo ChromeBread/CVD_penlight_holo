@@ -1,4 +1,10 @@
 {
+  "nav.menuHint": "Ketuk di sini untuk membuka halaman lain: cara pakai, game, bagan siklus, dan lainnya",
+  "ed.files": "Muat / simpan file",
+  "ed.filesHelp": "File CSV (.csv / .txt) dengan format sama seperti tabel a dan b bisa dipakai. Bisa dibuat di Excel, Google Sheets, Notepad, dll. Di Excel, simpan sebagai “CSV UTF-8 (Comma delimited)”. Isi yang dimuat disimpan di browser perangkat ini.",
+  "ed.openFile": "Muat file",
+  "ed.saveFile": "Simpan sebagai file",
+  "ed.template": "Unduh templat",
   "page.17": "Cek data live",
   "page.18": "Editor data live",
   "p2.use.17": "Lihat data live dan penlight bawaan, serta data yang kamu buat di halaman 18.",
@@ -89,7 +95,7 @@
   "cycle.prev": "Sebelumnya",
   "cycle.limit": "Warna terlalu banyak: hanya {n} warna pertama yang ditampilkan.",
   "p14.surprise": "Tampilkan member kejutan",
-  "p14.surpriseNote": "Default OFF. Berlaku untuk member dengan surprise = yes di data/a_fes_members.csv.",
+  "p14.surpriseNote": "Default OFF. Berlaku untuk member dengan surprise = yes di data/builtin/a_fes_members.csv.",
   "p14.hits": "Tampilkan area sentuh setengah lingkaran",
   "p14.hitOpacity": "Transparansi area sentuh",
   "p14.hitNote": "0%–95% (default 60%). Makin besar makin samar.",
@@ -357,7 +363,7 @@
   "p14.col.battery": "Baterai",
   "p14.col.note": "Catatan",
   "p14.noSpecs": "Belum ada yang terdaftar.",
-  "p14.specsNote": "Baris abu-abu belum diverifikasi. Tambah atau perbaiki di data/c_penlight_specs.csv.",
+  "p14.specsNote": "Baris abu-abu belum diverifikasi. Tambah atau perbaiki di data/builtin/c_penlight_specs.csv.",
 
   "pc.white": "Putih", "pc.red": "Merah", "pc.orange": "Oranye", "pc.yellow": "Kuning",
   "pc.lime": "Limau", "pc.green": "Hijau", "pc.emerald": "Zamrud", "pc.lightblue": "Biru Muda",

@@ -1,4 +1,10 @@
 {
+  "nav.menuHint": "Tap here to open the other pages: how to use, games, cycle charts and more",
+  "ed.files": "Load / save files",
+  "ed.filesHelp": "CSV files (.csv / .txt) in the same format as tables a and b work here. Make them in Excel, Google Sheets, Notepad and so on. In Excel, save as “CSV UTF-8 (Comma delimited)”. What you load is saved in this device’s browser.",
+  "ed.openFile": "Load a file",
+  "ed.saveFile": "Save as a file",
+  "ed.template": "Download a template",
   "page.17": "Live data",
   "page.18": "Live data editor",
   "p2.use.17": "See the built-in live and penlight data, and the data you made on page 18.",
@@ -89,7 +95,7 @@
   "cycle.prev": "Back",
   "cycle.limit": "Too many colors: showing the first {n}.",
   "p14.surprise": "Show surprise guest members",
-  "p14.surpriseNote": "OFF by default. Applies to members with surprise = yes in data/a_fes_members.csv.",
+  "p14.surpriseNote": "OFF by default. Applies to members with surprise = yes in data/builtin/a_fes_members.csv.",
   "p14.hits": "Show half-circle hit areas",
   "p14.hitOpacity": "Hit area transparency",
   "p14.hitNote": "0%–95% (default 60%). Higher = fainter.",
@@ -357,7 +363,7 @@
   "p14.col.battery": "Battery",
   "p14.col.note": "Note",
   "p14.noSpecs": "Nothing registered yet.",
-  "p14.specsNote": "Gray rows are unverified. Add or fix them in data/c_penlight_specs.csv.",
+  "p14.specsNote": "Gray rows are unverified. Add or fix them in data/builtin/c_penlight_specs.csv.",
 
   "pc.white": "White", "pc.red": "Red", "pc.orange": "Orange", "pc.yellow": "Yellow",
   "pc.lime": "Lime", "pc.green": "Green", "pc.emerald": "Emerald", "pc.lightblue": "Light Blue",

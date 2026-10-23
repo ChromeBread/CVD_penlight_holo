@@ -28,12 +28,22 @@ function pageFromHash() {
 
 function go(n) { location.hash = `#/${n}`; }
 
+// The menu button says "Menu" in words, and until the menu has been opened once a hint points at it,
+// because first-time users did not notice there is a menu at all.
 function renderBar(page) {
+  const menuBtn = h('button', { class: 'menu-btn' + (getState().menuSeen ? '' : ' new'), 'aria-label': t('nav.menu'), onclick: openMenu },
+    h('span', { class: 'menu-btn-icon', 'aria-hidden': 'true' }, '☰'), h('span', { class: 'menu-btn-text' }, t('nav.menu')));
   bar.replaceChildren(
-    h('button', { class: 'icon-btn', 'aria-label': t('nav.menu'), onclick: openMenu }, '☰'),
+    menuBtn,
     h('div', { class: 'bar-title' }, h('span', { class: 'bar-no' }, t('nav.page', { n: pageNo(page) })), t(`page.${page.id}`)),
     h('div', { id: 'bar-actions', class: 'bar-actions' }),
   );
+  document.querySelector('.menu-hint')?.remove();
+  if (!getState().menuSeen) {
+    document.body.append(h('div', { class: 'menu-hint', role: 'status' },
+      h('span', null, '👆 ' + t('nav.menuHint')),
+      h('button', { class: 'icon-btn', 'aria-label': t('common.close'), onclick: e => { setState({ menuSeen: true }); e.target.closest('.menu-hint').remove(); bar.querySelector('.menu-btn')?.classList.remove('new'); } }, '✕')));
+  }
 }
 
 function render() {
@@ -47,6 +57,7 @@ function render() {
 }
 
 function openMenu() {
+  if (!getState().menuSeen) { setState({ menuSeen: true }); document.querySelector('.menu-hint')?.remove(); bar.querySelector('.menu-btn')?.classList.remove('new'); }
   const close = () => sheet.remove();
   const list = PAGES.filter(p => !p.debug || isDebug()).map(p =>
     h('button', { class: 'menu-item' + (p === pageFromHash() ? ' active' : ''), onclick: () => { close(); go(p.id); } },
