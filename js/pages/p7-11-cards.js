@@ -9,9 +9,10 @@ const card = (id, tone, caution = false) => ({
   debug: true,
   render(root) {
     const lines = caution ? [...t(`p${id}.lines`), t('cards.gentle')] : t(`p${id}.lines`);
+    // the way back is small and tucked in a corner, so the other person won't tap it by accident
     const showCard = () => root.replaceChildren(h('div', { class: 'page full' },
-      messageCard(lines, { tone }),
-      caution ? h('button', { class: 'btn ghost', onclick: showNote }, t('cards.toNote')) : null));
+      caution ? h('button', { class: 'btn ghost card-back', onclick: showNote }, t('cards.toNote')) : null,
+      messageCard(lines, { tone })));
     const showNote = () => root.replaceChildren(h('div', { class: 'page stack' },
       h('p', { class: 'card-caution' }, '⚠ ' + t('cards.caution')),
       h('button', { class: 'btn big', onclick: showCard }, t('cards.toCard'))));

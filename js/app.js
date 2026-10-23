@@ -30,7 +30,7 @@ function go(n) { location.hash = `#/${n}`; }
 function renderBar(page) {
   bar.replaceChildren(
     h('button', { class: 'icon-btn', 'aria-label': t('nav.menu'), onclick: openMenu }, '☰'),
-    h('div', { class: 'bar-title' }, h('span', { class: 'bar-no' }, `P${pageNo(page)}`), t(`page.${page.id}`)),
+    h('div', { class: 'bar-title' }, h('span', { class: 'bar-no' }, t('nav.page', { n: pageNo(page) })), t(`page.${page.id}`)),
     h('div', { id: 'bar-actions', class: 'bar-actions' }),
   );
 }

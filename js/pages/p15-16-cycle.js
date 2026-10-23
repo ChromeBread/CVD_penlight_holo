@@ -35,9 +35,10 @@ const label = m => `${m.oshi_mark} ${memberName(m)}`.trim();
 const NEXT_COLOR = '#ff7a90', PREV_COLOR = '#6aa8ff';
 
 // Half-circle icon like the page 1 buttons, tinted with the direction color.
+// Striped is the left half and plain the right half, as on page 1.
 let iconId = 0;
 function halfIcon(striped, color, name) {
-  const root = svg('svg', { class: 'cy-half', viewBox: '-1.1 -1.1 1.3 2.2', role: 'img', 'aria-label': name });
+  const root = svg('svg', { class: 'cy-half', viewBox: striped ? '-1.1 -1.1 1.2 2.2' : '-0.1 -1.1 1.2 2.2', role: 'img', 'aria-label': name });
   let fill = color;
   if (striped) {
     const id = `cy-stripe-${++iconId}`;
@@ -46,18 +47,18 @@ function halfIcon(striped, color, name) {
     const defs = svg('defs'); defs.append(pat); root.append(defs);
     fill = `url(#${id})`;
   }
-  root.append(svg('path', { d: 'M0,-1 A1,1 0 0 0 0,1 Z', fill, stroke: color, 'stroke-width': '0.12' }));
+  root.append(svg('path', { d: striped ? 'M0,-1 A1,1 0 0 0 0,1 Z' : 'M0,-1 A1,1 0 0 1 0,1 Z', fill, stroke: color, 'stroke-width': '0.12' }));
   return root;
 }
 
-// Which half-circle goes forward, as on page 1 (the swap setting flips it).
+// The two halves side by side, each in the color of its arrow (the swap setting flips the colors).
 function legend() {
   const swap = getState().swapDirection;
-  const item = (cls, striped, color, text) => h('span', { class: cls },
-    halfIcon(striped, color, t(striped ? 'p1.btnStriped' : 'p1.btnPlain')), text);
+  const stripedColor = swap ? PREV_COLOR : NEXT_COLOR, plainColor = swap ? NEXT_COLOR : PREV_COLOR;
+  const dir = c => t(c === NEXT_COLOR ? 'cycle.next' : 'cycle.prev');
   return h('div', { class: 'cy-legend' },
-    item('cy-next', !swap, NEXT_COLOR, t('cycle.next')),
-    item('cy-prev', swap, PREV_COLOR, t('cycle.prev')));
+    halfIcon(true, stripedColor, `${t('p1.btnStriped')}: ${dir(stripedColor)}`),
+    halfIcon(false, plainColor, `${t('p1.btnPlain')}: ${dir(plainColor)}`));
 }
 
 // ---------- circle ----------
@@ -152,14 +153,45 @@ function column(slots) {
     })));
 }
 
-// The circle size is set with a slider (100-300 %); wider than the screen scrolls sideways.
+// The circle size is set with a slider (100-300 %). The chart sits in a window that fits the
+// screen, so it can be moved by dragging (finger or mouse) without scrolling the page to a scrollbar.
 function zoomable(el) {
   const box = h('div', { class: 'cy-zoom' }, el);
-  const apply = v => { el.style.width = `${v}%`; out.textContent = `${v}%`; };
   const out = h('output', { class: 'cy-zoom-val' });
+  let frame = 0;
+  const apply = v => {
+    // keep the point at the middle of the window in the middle while zooming
+    const old = parseFloat(el.style.width) || 100;
+    const cx = (box.scrollLeft + box.clientWidth / 2) / (box.scrollWidth || 1);
+    const cy = (box.scrollTop + box.clientHeight / 2) / (box.scrollHeight || 1);
+    el.style.width = `${v}%`; out.textContent = `${v}%`;
+    if (old !== v) {
+      box.scrollLeft = cx * box.scrollWidth - box.clientWidth / 2;
+      box.scrollTop = cy * box.scrollHeight - box.clientHeight / 2;
+    }
+  };
   const range = h('input', { type: 'range', min: '100', max: '300', step: '5', value: getState().cycleZoom, 'aria-label': t('cycle.zoom'),
-    oninput: e => apply(Number(e.target.value)), onchange: e => setState({ cycleZoom: Number(e.target.value) }) });
+    oninput: e => { const v = Number(e.target.value); cancelAnimationFrame(frame); frame = requestAnimationFrame(() => apply(v)); },
+    onchange: e => { const v = Number(e.target.value); cancelAnimationFrame(frame); apply(v); setState({ cycleZoom: v }); } });
   apply(getState().cycleZoom);
+
+  // mouse / pen drag pans the window (touch already pans natively)
+  let pan = null;
+  box.addEventListener('pointerdown', e => {
+    if (e.pointerType === 'touch') return;
+    pan = { x: e.clientX, y: e.clientY, l: box.scrollLeft, t: box.scrollTop };
+    try { box.setPointerCapture(e.pointerId); } catch { /* synthetic */ }
+    box.classList.add('panning');
+  });
+  box.addEventListener('pointermove', e => {
+    if (!pan) return;
+    box.scrollLeft = pan.l - (e.clientX - pan.x);
+    box.scrollTop = pan.t - (e.clientY - pan.y);
+  });
+  const stop = () => { pan = null; box.classList.remove('panning'); };
+  box.addEventListener('pointerup', stop);
+  box.addEventListener('pointercancel', stop);
+
   return h('div', { class: 'stack' }, h('label', { class: 'cy-zoom-row' }, h('span', null, '🔍 ' + t('cycle.zoom')), range, out), box);
 }
 
