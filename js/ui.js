@@ -71,6 +71,23 @@ export function fanBackground(slots) {
   return `conic-gradient(from -90deg, ${stops})`;
 }
 
+// Hot Button like the official penlight: long-press saves, one push jumps.
+export function hotButton(label, { onSave, onJump }) {
+  let timer = 0, saved = false;
+  const btn = h('button', { class: 'btn oshi-btn' }, label);
+  btn.addEventListener('pointerdown', () => {
+    saved = false;
+    timer = setTimeout(() => { saved = true; onSave(); }, 600);
+  });
+  const end = jump => { clearTimeout(timer); if (jump && !saved) onJump(); saved = false; };
+  btn.addEventListener('pointerup', () => end(true));
+  btn.addEventListener('pointerleave', () => end(false));
+  btn.addEventListener('pointercancel', () => end(false));
+  btn.addEventListener('contextmenu', e => e.preventDefault());
+  btn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onJump(); } });
+  return btn;
+}
+
 // Bottom sheet that slides up.
 export function bottomSheet(content, { onClose } = {}) {
   const close = () => { wrap.classList.add('closing'); setTimeout(() => { wrap.remove(); onClose?.(); }, 220); };

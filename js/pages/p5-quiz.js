@@ -1,9 +1,9 @@
 // Page 5: oshi color quiz for common color vision players.
-import { h, t, getState, isDebug } from '../core.js';
+import { h, t, getState, setState, isDebug, toast } from '../core.js';
 import { buildSlots, stageMembers } from '../data.js';
 import { glowBackground, paleHex } from '../color.js';
 import { createPenlightButtons } from '../penlight.js';
-import { stageSelect, penlightSelect, field, ensureSelection, memberName, slotColorName, fanBackground } from '../ui.js';
+import { stageSelect, penlightSelect, field, ensureSelection, memberName, slotColorName, fanBackground, hotButton } from '../ui.js';
 
 const LAYOUT = {
   striped: { x: 0.5, y: 0.6, d: 0.72, r: 0 },
@@ -54,21 +54,36 @@ export default {
       const pad = h('div', { class: 'p5-pad' });
       const startBtn = h('button', { class: 'btn big', hidden: true, onclick: begin }, 'START');
       const decide = h('button', { class: 'btn big', hidden: true, onclick: submit }, t('p5.decide'));
-      const oshiBtn = h('button', { class: 'btn ghost', onclick: jumpOshi }, '💖 ' + t('p1.oshi'));
+      let hotReturn = null;
+      const oshiBtn = hotButton('💖 ' + t('p1.oshi'), {
+        onSave: () => { if (on) { setState({ oshiColorKey: slots[idx].color_key }); toast(t('p1.hotSaved', { color: slotColorName(slots[idx]) })); } },
+        onJump: jumpOshi,
+      });
+      oshiBtn.className = 'btn ghost';
       root.replaceChildren(h('div', { class: 'p5' }, head, light, msg, h('div', { class: 'row center' }, startBtn, decide, oshiBtn), pad));
 
       buttons = createPenlightButtons(pad, {
         layout: LAYOUT, guard: () => 'off',
         onLongPress: () => { if (!on) turnOn(); },
-        onNext: () => { if (!on) return; idx = (idx + 1) % slots.length; taps++; paint(); },
-        onPrev: () => { if (!on) return; idx = (idx - 1 + slots.length) % slots.length; taps++; paint(); },
+        onNext: () => move(1),
+        onPrev: () => move(-1),
       });
+
+      // next / back right after a Hot Button jump returns to the color before the jump
+      function move(d) {
+        if (!on) return;
+        taps++;
+        if (hotReturn != null) { idx = hotReturn; hotReturn = null; } else idx = (idx + d + slots.length) % slots.length;
+        paint();
+      }
 
       function paint() { light.classList.toggle('off', !on); light.style.background = on ? glowBackground(slots[idx].hex) : ''; }
 
       function jumpOshi() {
-        const i = slots.findIndex(sl => sl.members.some(m => m.member_id === getState().oshiMemberId));
-        if (!on || i < 0) return;
+        const i = slots.findIndex(sl => sl.color_key === getState().oshiColorKey);
+        if (!on) return;
+        if (i < 0) { toast(t('p1.oshiNotSet')); return; }
+        if (hotReturn == null) hotReturn = idx;
         idx = i; taps = Infinity; paint();
       }
 
@@ -91,7 +106,7 @@ export default {
         q++;
         if (q >= qs.length) return result();
         const m = qs[q];
-        idx = 0; taps = 0; paint();
+        idx = 0; taps = 0; hotReturn = null; paint();
         head.replaceChildren(h('small', null, t('p5.q', { n: q + 1, total: qs.length })), h('strong', { class: 'p5-member' }, `${m.oshi_mark} ${memberName(m)}`));
         msg.replaceChildren(h('p', { class: 'fine' }, t('p5.hint')));
         t0 = performance.now();

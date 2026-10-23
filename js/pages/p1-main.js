@@ -3,7 +3,7 @@ import { h, t, getState, setState, isDebug, toast } from '../core.js';
 import { buildSlots, unmatchedMembers, stageMembers } from '../data.js';
 import { paleHex, simulateHex, glowBackground } from '../color.js';
 import { createPenlightButtons, cloneLayout, defaultLayout, KEYS } from '../penlight.js';
-import { stageSelect, penlightSelect, cvTypeSelect, field, toggle, ensureSelection, memberName, slotColorName, swatch, fanBackground, bottomSheet } from '../ui.js';
+import { stageSelect, penlightSelect, cvTypeSelect, field, toggle, ensureSelection, memberName, slotColorName, swatch, fanBackground, bottomSheet, hotButton } from '../ui.js';
 
 let wakeLock = null;
 async function keepAwake(on) {
@@ -28,7 +28,8 @@ export default {
     const info = h('div', { class: 'now' });
     const stage = h('div', { class: 'pl-stage' });
     const lockBanner = h('div', { class: 'lock-banner', hidden: true }, '🔒 ' + t('p1.lockedHint'));
-    const oshiBtn = h('button', { class: 'btn oshi-btn', hidden: true, onclick: jumpOshi }, '💖 ' + t('p1.oshi'));
+    const oshiBtn = hotButton('💖 ' + t('p1.oshi'), { onSave: saveOshi, onJump: jumpOshi });
+    oshiBtn.hidden = true;
     const fanBtn = h('button', { class: 'btn ghost fan-btn', hidden: true, onclick: () => { setState({ fanMode: !getState().fanMode }); draw(); } }, '◔ ' + t('p1.fanMode'));
     const editBar = h('div', { class: 'edit-bar', hidden: true });
     const wrap = h('div', { class: 'p1' }, disc, info, stage, lockBanner, oshiBtn, fanBtn, editBar);
@@ -49,14 +50,23 @@ export default {
     function pulse(el) { el.classList.remove('pulse'); void el.offsetWidth; el.classList.add('pulse'); }
 
     function step(d) {
+      // After a Hot Button jump, next / back returns to the color before the jump (like the real penlight).
+      const back = getState().hotReturn;
+      if (back != null) { setState({ index: back, hotReturn: null }); draw(); return; }
       setState({ index: idx() + d });
       draw(d);
     }
 
+    function saveOshi() {
+      setState({ oshiColorKey: slots[idx()].color_key });
+      toast(t('p1.hotSaved', { color: slotColorName(slots[idx()]) }));
+      draw();
+    }
+
     function jumpOshi() {
-      const id = getState().oshiMemberId;
-      const i = slots.findIndex(sl => sl.members.some(m => m.member_id === id));
+      const i = slots.findIndex(sl => sl.color_key === getState().oshiColorKey);
       if (i < 0) { toast(t('p1.oshiNotSet')); return; }
+      if (getState().hotReturn == null) setState({ hotReturn: idx() });
       setState({ index: i });
       draw();
     }
@@ -103,6 +113,8 @@ export default {
           h('span', null, `◀ ${marks(at(-1))}`), h('span', null, `${marks(at(1))} ▶`)));
 
       oshiBtn.hidden = !(debug && s.oshiButton);
+      const saved = slots.find(sl => sl.color_key === s.oshiColorKey);
+      oshiBtn.style.boxShadow = saved ? `0 0 0 3px ${paleHex(saved.hex)}` : '';
       fanBtn.hidden = !debug;
     }
 
@@ -135,15 +147,19 @@ export default {
       const debugPart = isDebug() ? [
         h('h3', null, 'DEBUG'),
         toggle(t('p1.oshiButtonMode'), st.oshiButton, v => { setState({ oshiButton: v }); draw(); }),
-        field(t('p1.myOshi'), h('select', { class: 'select', onchange: e => setState({ oshiMemberId: e.target.value }) },
+        h('p', { class: 'fine' }, t('p1.hotHelp')),
+        field(t('p1.myOshi'), h('select', { class: 'select', onchange: e => {
+          const m = stageMembers(getState().stageId).find(x => x.member_id === e.target.value);
+          setState({ oshiMemberId: e.target.value, oshiColorKey: m ? m.color_key : null }); draw();
+        } },
           h('option', { value: '' }, '—'),
           stageMembers(st.stageId).map(m => h('option', { value: m.member_id, selected: m.member_id === st.oshiMemberId }, `${m.oshi_mark} ${memberName(m)}`)))),
         toggle(t('p1.fanMode'), st.fanMode, v => { setState({ fanMode: v }); draw(); }),
       ] : [];
       const close = bottomSheet(h('div', { class: 'stack' },
         h('h2', null, t('p1.settings')),
-        field(t('common.stage'), stageSelect(st.stageId, v => { setState({ stageId: v, index: 0 }); reload(); })),
-        field(t('common.penlight'), penlightSelect(st.penlightId, v => { setState({ penlightId: v, index: 0 }); reload(); })),
+        field(t('common.stage'), stageSelect(st.stageId, v => { setState({ stageId: v, index: 0, hotReturn: null }); reload(); })),
+        field(t('common.penlight'), penlightSelect(st.penlightId, v => { setState({ penlightId: v, index: 0, hotReturn: null }); reload(); })),
         missing.length ? h('p', { class: 'warn' }, t('p1.notOnPenlight', { list: missing.map(m => m.oshi_mark + memberName(m)).join(', ') })) : null,
         field(t('p1.compareWith'), cvTypeSelect(st.cvType, v => { setState({ cvType: v }); draw(); })),
         field(t('p1.guard'), h('select', { class: 'select', onchange: e => setState({ guard: e.target.value }) },

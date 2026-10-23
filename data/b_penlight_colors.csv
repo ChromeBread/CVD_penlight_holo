@@ -1,13 +1,13 @@
 penlight_id,penlight_name,order,color_key,color_name_en,color_name_ja,color_hex,note
-fes6-12c,6th fes. 12 colors (order unverified),1,white,White,ホワイト,#FFFFFF,order unverified; hex = wiki display color
-fes6-12c,6th fes. 12 colors (order unverified),2,red,Red,レッド,#FF3333,order unverified; hex = wiki display color
-fes6-12c,6th fes. 12 colors (order unverified),3,orange,Orange,オレンジ,#FF9933,order unverified; hex = wiki display color
-fes6-12c,6th fes. 12 colors (order unverified),4,yellow,Yellow,イエロー,#FFFF33,order unverified; hex = wiki display color
-fes6-12c,6th fes. 12 colors (order unverified),5,lightgreen,Light Green,ライトグリーン,#CCFFCC,order unverified; hex = wiki display color
-fes6-12c,6th fes. 12 colors (order unverified),6,green,Green,グリーン,#339933,order unverified; hex = wiki display color
-fes6-12c,6th fes. 12 colors (order unverified),7,lightblue,Light Blue,ライトブルー,#CCFFFF,order unverified; hex = wiki display color
-fes6-12c,6th fes. 12 colors (order unverified),8,blue,Blue,ブルー,#3333FF,order unverified; hex = wiki display color
-fes6-12c,6th fes. 12 colors (order unverified),9,violet,Violet,バイオレット,#CC99FF,order unverified; hex = wiki display color
-fes6-12c,6th fes. 12 colors (order unverified),10,purple,Purple,パープル,#9933FF,order unverified; hex = wiki display color
-fes6-12c,6th fes. 12 colors (order unverified),11,pink,Pink,ピンク,#FF66FF,order unverified; hex = wiki display color
-fes6-12c,6th fes. 12 colors (order unverified),12,lightpink,Light Pink,ライトピンク,#FFCCFF,order unverified; hex = wiki display color
+fes7-official,hololive 7th fes. Ridin' on Dreams penlight,1,red,Red,レッド,#FF3333,order from official spec; hex = wiki display color
+fes7-official,hololive 7th fes. Ridin' on Dreams penlight,2,blue,Blue,ブルー,#3333FF,order from official spec; hex = wiki display color
+fes7-official,hololive 7th fes. Ridin' on Dreams penlight,3,white,White,ホワイト,#FFFFFF,order from official spec; hex = wiki display color
+fes7-official,hololive 7th fes. Ridin' on Dreams penlight,4,orange,Orange,オレンジ,#FF9933,order from official spec; hex = wiki display color
+fes7-official,hololive 7th fes. Ridin' on Dreams penlight,5,green,Green,グリーン,#339933,order from official spec; hex = wiki display color
+fes7-official,hololive 7th fes. Ridin' on Dreams penlight,6,purple,Purple,パープル,#9933FF,order from official spec; hex = wiki display color
+fes7-official,hololive 7th fes. Ridin' on Dreams penlight,7,pink,Pink,ピンク,#FF66FF,order from official spec; hex = wiki display color
+fes7-official,hololive 7th fes. Ridin' on Dreams penlight,8,yellow,Yellow,イエロー,#FFFF33,order from official spec; hex = wiki display color
+fes7-official,hololive 7th fes. Ridin' on Dreams penlight,9,lightgreen,Light Green,ライトグリーン,#CCFFCC,order from official spec; hex = wiki display color
+fes7-official,hololive 7th fes. Ridin' on Dreams penlight,10,lightblue,Light Blue,ライトブルー,#CCFFFF,order from official spec; hex = wiki display color
+fes7-official,hololive 7th fes. Ridin' on Dreams penlight,11,lightpink,Light Pink,ライトピンク,#FFCCFF,order from official spec; hex = wiki display color
+fes7-official,hololive 7th fes. Ridin' on Dreams penlight,12,violet,Violet,バイオレット,#CC99FF,order from official spec; hex = wiki display color
