@@ -6,6 +6,7 @@ const fmt = n => Math.round(n);
 
 export default {
   id: 4,
+  debug: true,
   render(root) {
     let img = null, data = null, file = null;
     let scale = 1, ox = 0, oy = 0, picked = null, pickPos = null;

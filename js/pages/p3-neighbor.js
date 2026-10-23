@@ -4,7 +4,7 @@ import { h, t, toast } from '../core.js';
 import { buildSlots, stageMembers } from '../data.js';
 import { glowBackground, paleHex } from '../color.js';
 import { createPenlightButtons } from '../penlight.js';
-import { stageSelect, penlightSelect, field, ensureSelection, memberName, slotColorName, swatch } from '../ui.js';
+import { stageSelect, penlightSelect, field, ensureSelection, memberName, memberLabel, slotColorName, swatch } from '../ui.js';
 
 // Fixed layout for the game: edits from Page 1 never apply here.
 // The circle is much bigger than the pad and sits low, so only its top ~40% is on screen:
@@ -79,10 +79,10 @@ export default {
         round++;
         if (round > ROUNDS) return finish();
         target = pool[Math.floor(Math.random() * pool.length)];
-        const label = `${target.oshi_mark} ${memberName(target)}`;
+        const label = () => memberLabel(target, true);
         const q = t('p3.round', { n: round, total: ROUNDS });
-        topTarget.replaceChildren(h('small', null, q), h('strong', null, label));
-        botTarget.replaceChildren(h('small', null, q), h('strong', null, label));
+        topTarget.replaceChildren(h('small', null, q), h('strong', null, label()));
+        botTarget.replaceChildren(h('small', null, q), h('strong', null, label()));
         reveal.replaceChildren();
         showTally();
         judging = false;

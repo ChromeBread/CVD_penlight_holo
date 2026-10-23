@@ -16,14 +16,11 @@ Made by **BlackDream feat. ChromeBread(Dead Beats)**.
 | 1 Penlight | Two half-circle buttons (striped / plain) step through the penlight's color order. Shows the members for the current color, a soft "penlight glow" of their color, the color code, the same color as seen by a chosen color vision type, and the previous / next colors. Layout editor with presets, mis-tap guards (off by default), a movable lock button, keep-screen-on. State is restored after closing the browser. |
 | 2 How to use & safety | "Do not swing your phone", per-page help, pre-live checklist. |
 | 3 Color match with your neighbor | Two-player game on one screen (top half upside down). |
-| 4 Read colors from a picture | Open or take a photo, trace to read the color (HEX, rough name, HSL/HSV/CMYK, simulations). |
 | 5 Oshi color challenge | Quiz for common color vision fans. |
-| 13 About | Hashtag, debug switch, version, credits. |
+| 13 About | Hashtag, debug switch, version, update check / clear cache, credits. In debug mode also data management: backup, restore, delete what you added. |
 | 15 Penlight cycle chart (circle) | Pick a live and a penlight: every color in button order around a circle, with the members for each color; size slider. |
 | 16 Penlight cycle chart (vertical) | The same as a vertical list, easy to read on a phone. |
-| 17 Live data | All built-in live (stage) and penlight data, plus the data you made on page 18. |
-| 18 Live data editor | Make your own live / penlight data, copy built-in data to edit, or paste CSV text to import / export. Built-in data stays read-only; your data is kept in this browser. |
-| 6–12, 14 | Debug mode pages: phrase cards; 7 “Thank you!👍”, 8 “Sorry”, 9 Ultra orange🚫🍊✨, 10 Photos🚫📸, 11 “🚑Medical emergency!” (its page number shows the emergency number of the language: 119 / 911 / 120 / 999); 12 test color bars; 14 debug settings (surprise guests, hit-area overlay, image opacity). |
+| 4, 6–12, 14, 17, 18 | Debug mode pages: 4 read colors from a picture; 6 phrase cards; 7 “Thank you!👍”, 8 “Sorry”, 9 Ultra orange🚫🍊✨, 10 Photos🚫📸, 11 “🚑Medical emergency!” (its page number shows the emergency number of the language: 119 / 911 / 120 / 999); 12 test color bars; 14 debug settings (surprise guests, hit-area overlay, image opacity, return to the editor); 17 live data viewer; 18 live data editor (your own live / penlight data, CSV file load / save, autosave). Page 1 in debug mode: Hot Button, lock size, size / position of the display parts, member image overlay. |
 
 Languages: 日本語 / English / 한국어 / 简体中文 / 繁體中文 / Bahasa Indonesia (auto-detected from the device / browser).
 

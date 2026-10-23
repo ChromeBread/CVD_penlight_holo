@@ -146,7 +146,6 @@ input[type=range] { width: 100%; accent-color: var(--accent); min-height: 32px; 
 .now-member { font-size: 1.3rem; font-weight: 700; display: flex; gap: 8px; align-items: center; }
 .now-mark { font-size: 1.5rem; }
 .neighbors { display: flex; justify-content: space-between; margin-top: 6px; color: var(--muted); }
-.member-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 12px; pointer-events: none; z-index: 1; }
 .empty { color: var(--muted); text-align: center; padding: 2rem 0; }
 .pl-stage { position: absolute; inset: 0; z-index: 1; } /* behind the color info, which lets taps through */
 .p1.editing .pl-stage { z-index: 5; }
@@ -399,3 +398,23 @@ body[data-page="7"] .msg-sub, body[data-page="8"] .msg-sub { font-size: clamp(1.
 .menu-hint .icon-btn { color: #0d1a24; flex: none; }
 a.btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
 .btn:disabled { opacity: .45; cursor: default; }
+
+/* ---------- v0.2.2 ---------- */
+/* names outside ja / en: English main, Japanese small underneath */
+.mname-sub { display: block; font-size: .62em; font-weight: 400; opacity: .75; line-height: 1.25; }
+/* page 1: member image over the color disc (debug), adjustable parts */
+.disc-light { position: relative; overflow: hidden; }
+.disc-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 50%; pointer-events: none; }
+.p1 [data-part] { transform-origin: top center; }
+.parts { border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; }
+.parts summary { font-weight: 700; min-height: 36px; display: flex; align-items: center; }
+.part-group { display: grid; gap: 4px; margin: 10px 0; }
+.part-slider { display: grid; grid-template-columns: 6.5em 1fr; align-items: center; gap: 8px; font-size: .9rem; }
+.part-slider input { width: 100%; }
+/* page 18: year / month / day boxes */
+.ed-date { flex-wrap: nowrap; gap: 6px; }
+.ed-datepart { display: flex; align-items: center; gap: 4px; }
+/* unfinished edit after a restart */
+.resume-box { position: fixed; left: 12px; right: 12px; bottom: calc(var(--safe-b) + 14px); z-index: 60; background: var(--panel); border: 2px solid var(--accent); border-radius: var(--radius); padding: 12px 14px; box-shadow: 0 8px 30px #0008; }
+.resume-box p { margin: 0 0 8px; }
+.danger-btn { background: var(--danger); border-color: var(--danger); color: #2a0a0a; }

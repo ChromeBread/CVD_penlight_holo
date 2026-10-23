@@ -1,9 +1,9 @@
 // Page 2: safety warning, how to use each page, pre-live checklist.
-import { h, t, getState, setState, pageNo } from '../core.js';
+import { h, t, getState, setState, pageNo, isDebug } from '../core.js';
 
 const CHECKS = ['airplane', 'power', 'volume', 'alarm', 'brightness', 'streetpass', 'charge', 'offline'];
-const GUIDE_PAGES = [1, 3, 4, 5, 13, 15, 16, 17, 18];
-const DEBUG_PAGES = [6, 7, 8, 9, 10, 11, 12, 14];
+const GUIDE_PAGES = [1, 3, 5, 13, 15, 16];
+const DEBUG_PAGES = [4, 6, 7, 8, 9, 10, 11, 12, 14, 17, 18];   // explained only while debug mode is on
 
 export default {
   id: 2,
@@ -11,10 +11,11 @@ export default {
     const done = { ...getState().checklist };
     root.append(h('div', { class: 'page stack' },
       h('div', { class: 'danger' }, h('strong', null, '⚠ ' + t('p2.noSwing')), h('p', null, t('p2.noSwingSub'))),
+      h('div', { class: 'card' }, h('p', null, '📱 ' + t('p2.portrait'))),
       h('h2', null, t('p2.howTo')),
       h('dl', { class: 'howto' }, GUIDE_PAGES.flatMap(n => [h('dt', null, `${t('nav.page', { n: pageNo({ id: n }) })} ${t(`page.${n}`)}`), h('dd', null, t(`p2.use.${n}`), n === 1 ? [h('br'), t('p2.lockMove')] : null)])),
-      h('details', null, h('summary', null, t('p2.debugPages')),
-        h('dl', { class: 'howto' }, DEBUG_PAGES.flatMap(n => [h('dt', null, `${t('nav.page', { n: pageNo({ id: n }) })} ${t(`page.${n}`)}`), h('dd', null, t(`p2.use.${n}`))]))),
+      isDebug() ? h('details', null, h('summary', null, t('p2.debugPages')),
+        h('dl', { class: 'howto' }, DEBUG_PAGES.flatMap(n => [h('dt', null, `${t('nav.page', { n: pageNo({ id: n }) })} ${t(`page.${n}`)}`), h('dd', null, t(`p2.use.${n}`))]))) : null,
       h('h2', null, t('p2.beforeLive')),
       h('ul', { class: 'checklist' }, CHECKS.map(k => h('li', null,
         h('label', null,

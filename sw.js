@@ -1,9 +1,9 @@
 // Offline support: everything is cached on first visit, so the app works
 // inside the venue without signal. Data CSVs are refreshed when online.
-const VERSION = 'cvdph-0.2.1';
+const VERSION = 'cvdph-0.2.2';
 const FILES = [
   './', 'index.html', 'manifest.webmanifest', 'css/app.css',
-  'js/app.js', 'js/core.js', 'js/data.js', 'js/color.js', 'js/penlight.js', 'js/ui.js',
+  'js/app.js', 'js/core.js', 'js/data.js', 'js/color.js', 'js/penlight.js', 'js/ui.js', 'js/images.js',
   'js/pages/p1-main.js', 'js/pages/p2-guide.js', 'js/pages/p3-neighbor.js', 'js/pages/p4-picker.js',
   'js/pages/p5-quiz.js', 'js/pages/p6-phrases.js', 'js/pages/p7-11-cards.js', 'js/pages/p12-test.js',
   'js/pages/p13-about.js', 'js/pages/p14-debug.js', 'js/pages/p15-16-cycle.js', 'js/pages/p17-18-livedata.js',

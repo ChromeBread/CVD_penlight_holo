@@ -1,5 +1,5 @@
 // Shared UI pieces used by several pages.
-import { h, t, localized, getState, setState } from './core.js';
+import { h, t, localized, getState, setState, currentLang } from './core.js';
 import { DB, isUserId } from './data.js';
 import { glowBackground, paleHex, simulateHex, textOn } from './color.js';
 
@@ -63,6 +63,14 @@ export function ensureSelection() {
 }
 
 export function memberName(m) { return localized(m, 'name'); }
+
+// Name as an element. Outside Japanese and English the English (romaji) name is the main one and the
+// Japanese name is added small underneath, since most fans know both.
+export function memberLabel(m, mark = false) {
+  const main = memberName(m), lang = currentLang();
+  const sub = lang !== 'ja' && lang !== 'en' && m.name_ja && m.name_ja !== main ? m.name_ja : '';
+  return h('span', { class: 'mname' }, mark && m.oshi_mark ? `${m.oshi_mark} ` : null, main, sub ? h('small', { class: 'mname-sub' }, sub) : null);
+}
 
 export function slotColorName(slot) {
   const k = `pc.${slot.color_key}`, v = t(k);

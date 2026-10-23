@@ -1,6 +1,7 @@
 // Page 13: please post with the hashtag, debug switch, app info, updates / cache, credits, thanks.
-import { h, t, APP, isDebug, setDebug, currentLang, formatSize } from '../core.js';
-import { DB } from '../data.js';
+import { h, t, APP, isDebug, setDebug, currentLang, formatSize, formatDate, toast } from '../core.js';
+import { DB, getUserData, saveUserData, getDraft, saveDraft, clearDraft } from '../data.js';
+import { listImages, deleteImage, clearImages, exportImages, importImages } from '../images.js';
 import { toggle } from '../ui.js';
 
 const fmtTime = iso => { try { return new Date(iso).toLocaleString(currentLang()); } catch { return iso; } };
@@ -72,6 +73,75 @@ function updateSection() {
     h('p', { class: 'fine' }, t('p13.clearNote')));
 }
 
+// ---------- debug: everything added on this device (live data, penlights, member images, the editor draft) ----------
+const stamp = () => new Date().toISOString().slice(0, 10).replace(/-/g, '');
+
+function saveFile(name, text) {
+  const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+  const a = h('a', { href: url, download: name });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+async function backup() {
+  const b = { format: 'cvdph-backup', version: APP.version, savedAt: new Date().toISOString(),
+    userdata: getUserData(), draft: getDraft(), images: await exportImages() };
+  saveFile(`cvdph-backup-${stamp()}.json`, JSON.stringify(b));
+}
+
+// Adds what the backup has; data already here (same id / member) is kept as it is, images are replaced.
+async function restore(file) {
+  const b = JSON.parse(await file.text());
+  if (b?.format !== 'cvdph-backup') throw new Error('not a backup');
+  const u = getUserData();
+  for (const k of ['stages', 'penlights']) {
+    for (const x of b.userdata?.[k] || []) if (x?.id && !u[k].some(y => y.id === x.id)) u[k].push(x);
+  }
+  saveUserData(u);
+  await importImages(b.images);
+  if (b.draft?.data && !getDraft()) saveDraft(b.draft);
+}
+
+function dataSection() {
+  const u = getUserData(), imgs = listImages(), draft = getDraft();
+  const refresh = () => box.replaceWith(dataSection());
+  const del = (name, fn) => async () => {
+    if (!confirm(t('p13.data.delConfirm', { name }))) return;
+    await fn(); refresh();
+  };
+  const drop = (kind, id) => () => { const d = getUserData(); d[kind] = d[kind].filter(x => x.id !== id); saveUserData(d); };
+  const item = (name, sub, fn) => h('li', null, h('span', null, h('strong', null, name), sub ? h('small', null, ` ${sub}`) : null),
+    h('button', { class: 'btn ghost', onclick: del(name, fn) }, '🗑 ' + t('ed.delete')));
+  const group = (title, items) => [h('h3', null, title), items.length ? h('ul', { class: 'ed-list' }, items) : h('p', { class: 'fine' }, t('ld.none'))];
+  const input = h('input', { type: 'file', accept: '.json,application/json', hidden: true });
+  input.addEventListener('change', async () => {
+    const f = input.files[0];
+    input.value = '';
+    if (!f) return;
+    try { await restore(f); toast(t('p13.data.restored')); refresh(); } catch { toast(t('p13.data.restoreFail')); }
+  });
+  const all = async () => {
+    if (!confirm(t('p13.data.allConfirm'))) return;
+    saveUserData({ stages: [], penlights: [] });
+    clearDraft();
+    try { await clearImages(); } catch { /* no image store */ }
+    toast(t('p13.data.cleared')); refresh();
+  };
+  const box = h('div', { class: 'card stack' },
+    h('h2', null, t('p13.data')),
+    h('p', { class: 'fine' }, t('p13.data.note')),
+    group(t('ld.lives'), u.stages.map(s => item(s.name, s.date ? formatDate(s.date) : '', drop('stages', s.id)))),
+    group(t('ld.penlights'), u.penlights.map(p => item(p.name, t('ld.colors', { n: p.colors.length }), drop('penlights', p.id)))),
+    group(t('p13.data.images'), imgs.map(i => item(i.label || i.key, i.size ? formatSize(i.size) : t('p13.data.urlOnly'), () => deleteImage(i.key)))),
+    group(t('p13.data.draft'), draft?.data ? [item(draft.data.name || '—', draft.savedAt ? fmtTime(draft.savedAt) : '', clearDraft)] : []),
+    input,
+    h('div', { class: 'row' },
+      h('button', { class: 'btn', onclick: () => backup().then(() => toast(t('p13.data.backedUp')), () => toast(t('p13.data.backupFail'))) }, '💾 ' + t('p13.data.backup')),
+      h('button', { class: 'btn ghost', onclick: () => input.click() }, '📂 ' + t('p13.data.restore'))),
+    h('button', { class: 'btn danger-btn', onclick: all }, '🗑 ' + t('p13.data.all')));
+  return box;
+}
+
 export default {
   id: 13,
   render(root) {
@@ -86,6 +156,7 @@ export default {
         h('dt', null, t('p13.version')), h('dd', null, APP.version),
         h('dt', null, t('p13.build')), h('dd', null, APP.build)),
       updateSection(),
+      isDebug() ? dataSection() : null,
       h('h2', null, t('p13.credits')),
       h('dl', { class: 'kv' },
         h('dt', null, t('p13.author')), h('dd', null, APP.author),

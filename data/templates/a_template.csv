@@ -1,4 +1,4 @@
-﻿stage_id,stage_name_en,stage_name_ja,date,member_id,name_en,name_ja,oshi_mark,color_key,color_hex,surprise
-my-live-day1,My live / DAY1,マイライブ / DAY1,2026-12-31,member-a,Member A,メンバーA,🌟,red,#FF3333,no
-my-live-day1,My live / DAY1,マイライブ / DAY1,2026-12-31,member-b,Member B,メンバーB,🌙,blue,#3333FF,no
-my-live-day1,My live / DAY1,マイライブ / DAY1,2026-12-31,member-c,Member C,メンバーC,🎵,lightgreen,#99FF66,yes
+﻿stage_id,stage_name_en,stage_name_ja,year,month,day,member_id,name_en,name_ja,oshi_mark,color_key,color_hex,oshi_color_1,oshi_color_2,oshi_color_3,surprise
+my-live-day1,My live / DAY1,マイライブ / DAY1,2026,12,31,member-a,Member A,メンバーA,🌟,red,#FF3333,,,,no
+my-live-day1,My live / DAY1,マイライブ / DAY1,2026,12,31,member-b,Member B,メンバーB,🌙,blue,#3333FF,,,,no
+my-live-day1,My live / DAY1,マイライブ / DAY1,2026,12,31,member-c,Member C,メンバーC,🎵,lightgreen,#99FF66,,,,yes

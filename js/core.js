@@ -3,8 +3,8 @@
 export const APP = {
   code: 'CVDp-h',
   title: 'CVDp-h', // release title: TBD
-  version: '0.2.1',
-  build: '2026-10-23',
+  version: '0.2.2',
+  build: '2026-10-24',
   author: 'BlackDream feat. ChromeBread(Dead Beats)',
   hashtag: '#CVDph',
 };
@@ -53,6 +53,8 @@ const defaults = {
   cycleZoom: 100,  // page 15 chart size in %
   menuSeen: false, // first-visit hint pointing at the menu button
   overlayOpacity: 45,
+  resumeEdit: true, // debug option: reopen the live data editor where it was left
+  p1Parts: null,    // debug: size / position of the page 1 color disc, color boxes and names
   checklist: {},
 };
 let state = { ...defaults };

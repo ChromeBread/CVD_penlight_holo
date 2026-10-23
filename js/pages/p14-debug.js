@@ -27,6 +27,8 @@ export default {
       h('ul', null, t('p14.items').map(x => h('li', null, x))),
       toggle(t('p14.surprise'), st.showSurprise, v => setState({ showSurprise: v })),
       h('p', { class: 'fine' }, t('p14.surpriseNote')),
+      toggle(t('p14.resume'), st.resumeEdit, v => setState({ resumeEdit: v })),
+      h('p', { class: 'fine' }, t('p14.resumeNote')),
       toggle(t('p14.hits'), st.showHits, v => setState({ showHits: v })),
       h('h2', null, t('p14.hitOpacity')),
       percent('hitOpacity'),

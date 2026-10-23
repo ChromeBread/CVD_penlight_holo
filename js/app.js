@@ -1,5 +1,6 @@
-import { h, t, APP, LANGS, getState, setState, detectLang, loadLang, currentLang, isDebug, onDebug, pageNo, formatSize } from './core.js';
-import { loadData } from './data.js';
+import { h, t, APP, LANGS, getState, setState, setDebug, detectLang, loadLang, currentLang, isDebug, onDebug, pageNo, formatSize } from './core.js';
+import { loadData, getDraft, clearDraft } from './data.js';
+import { loadImages } from './images.js';
 import p1 from './pages/p1-main.js';
 import p2 from './pages/p2-guide.js';
 import p3 from './pages/p3-neighbor.js';
@@ -107,14 +108,30 @@ function saveProgress() {
   });
 }
 
+// The live data editor is a debug page and debug mode is off after a restart, so an unfinished edit
+// is offered here: one tap turns debug mode on and opens the editor where it was left.
+function offerResume() {
+  const d = getDraft();
+  if (!d?.data || !getState().resumeEdit) return;
+  const box = h('div', { class: 'resume-box', role: 'dialog' },
+    h('p', null, '✎ ' + t('ed.draftFound', { name: d.data.name || '—', time: d.savedAt ? new Date(d.savedAt).toLocaleString(currentLang()) : '' })),
+    h('div', { class: 'row' },
+      h('button', { class: 'btn', onclick: () => { box.remove(); setDebug(true); go(18); } }, t('ed.draftResume')),
+      h('button', { class: 'btn ghost', onclick: () => box.remove() }, t('ed.draftLater')),
+      h('button', { class: 'btn ghost', onclick: () => { if (confirm(t('ed.draftDropConfirm'))) { clearDraft(); box.remove(); } } }, t('ed.draftDrop'))));
+  document.body.append(box);
+}
+
 async function boot() {
   const s = getState();
   await loadLang(s.lang || detectLang());
   saveProgress();
   await loadData();
+  loadImages();   // pages redraw when the images are ready
   window.addEventListener('hashchange', render);
   onDebug(() => render());
   render();
+  offerResume();
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     navigator.serviceWorker.register('sw.js').catch(() => {});
   }

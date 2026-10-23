@@ -1,9 +1,10 @@
 // Page 1: main penlight helper.
 import { h, t, getState, setState, isDebug, toast } from '../core.js';
 import { buildSlots, unmatchedMembers, stageMembers } from '../data.js';
+import { imageFor, imageKey, addImageFile, addImageUrl, deleteImage, onImages } from '../images.js';
 import { paleHex, simulateHex, glowBackground } from '../color.js';
 import { createPenlightButtons, cloneLayout, defaultLayout, KEYS } from '../penlight.js';
-import { stageSelect, penlightSelect, cvTypeSelect, field, toggle, ensureSelection, memberName, slotColorName, swatch, bottomSheet, hotButton } from '../ui.js';
+import { stageSelect, penlightSelect, cvTypeSelect, field, toggle, ensureSelection, memberName, memberLabel, slotColorName, swatch, bottomSheet, hotButton } from '../ui.js';
 
 let wakeLock = null;
 async function keepAwake(on) {
@@ -24,7 +25,7 @@ export default {
     const n = () => slots.length || 1;
     const idx = () => ((getState().index % n()) + n()) % n();
 
-    const disc = h('div', { class: 'disc', 'aria-live': 'polite' });
+    const disc = h('div', { class: 'disc', 'aria-live': 'polite', 'data-part': 'disc' });
     const info = h('div', { class: 'now' });
     const stage = h('div', { class: 'pl-stage' });
     const lockBanner = h('div', { class: 'lock-banner', hidden: true }, '🔒 ' + t('p1.lockedHint'));
@@ -72,6 +73,67 @@ export default {
 
     function marks(slot) { return slot.members.map(m => m.oshi_mark).join(' ') || '·'; }
 
+    // debug: an image the user added for a member, shown faintly over that color's disc
+    function discImage(sl) {
+      const src = imageFor(sl.members.find(m => imageFor(m)));
+      return src ? h('img', { class: 'disc-img', src, alt: '', draggable: 'false', style: { opacity: String(1 - getState().overlayOpacity / 100) } }) : null;
+    }
+
+    // Size and position of the color disc, the color boxes and the names (set in debug mode, kept after it).
+    // Uses the separate scale / translate properties so the disc's slide animation (transform) still works.
+    const PARTS = ['disc', 'pair', 'names'];
+    const partOf = k => ({ s: 100, x: 0, y: 0, ...(getState().p1Parts || {})[k] });
+    function applyParts(preview) {
+      for (const k of PARTS) {
+        const el = wrap.querySelector(`[data-part="${k}"]`);
+        if (!el) continue;
+        const p = preview?.[k] || partOf(k);
+        el.style.scale = p.s !== 100 ? String(p.s / 100) : '';
+        el.style.translate = p.x || p.y ? `${p.x}px ${p.y}px` : '';
+      }
+    }
+    function partsEditor() {
+      const cur = Object.fromEntries(PARTS.map(k => [k, partOf(k)]));
+      const keep = () => setState({ p1Parts: JSON.parse(JSON.stringify(cur)) });
+      const slider = (k, prop, min, max, label) => h('label', { class: 'part-slider' }, h('span', null, label),
+        h('input', { type: 'range', min, max, step: '1', value: cur[k][prop],
+          oninput: e => { cur[k][prop] = Number(e.target.value); applyParts(cur); }, onchange: keep }));
+      const box = h('details', { class: 'parts' }, h('summary', null, '📐 ' + t('p1.parts')),
+        h('p', { class: 'fine' }, t('p1.partsHelp')),
+        PARTS.map(k => h('div', { class: 'part-group' }, h('strong', null, t(`p1.area.${k}`)),
+          slider(k, 's', '50', '200', t('p1.size')), slider(k, 'x', '-200', '200', t('p1.moveX')), slider(k, 'y', '-300', '300', t('p1.moveY')))),
+        h('button', { class: 'btn ghost', onclick: () => { setState({ p1Parts: null }); applyParts(); const b = partsEditor(); b.open = true; box.replaceWith(b); } }, t('p1.reset')));
+      return box;
+    }
+
+    // debug: choose a member and add an image from the phone or from a web address
+    function imageEditor() {
+      const members = stageMembers(getState().stageId);
+      const now = slots[idx()]?.members[0];
+      const sel = h('select', { class: 'select' }, members.map(m => h('option', { value: m.member_id, selected: m === now }, `${m.oshi_mark} ${memberName(m)}${imageFor(m) ? ' 🖼' : ''}`)));
+      const pick = () => members.find(m => m.member_id === sel.value);
+      const file = h('input', { type: 'file', accept: 'image/*', hidden: true });
+      file.addEventListener('change', async () => {
+        const f = file.files[0], m = pick();
+        file.value = '';
+        if (!f || !m) return;
+        try { await addImageFile(imageKey(m), memberName(m), f); toast(t('p1.imgAdded')); } catch { toast(t('p1.imgFail')); }
+      });
+      const fromUrl = async () => {
+        const m = pick(), url = (prompt(t('p1.imgUrlAsk'), 'https://') || '').trim();
+        if (!m || !/^https?:\/\/\S+$/i.test(url)) return;
+        toast(t(await addImageUrl(imageKey(m), memberName(m), url) ? 'p1.imgAdded' : 'p1.imgUrlOnly'));
+      };
+      return h('div', { class: 'stack' },
+        h('h3', null, '🖼 ' + t('p1.img')),
+        members.length ? field(t('p1.imgMember'), sel) : null, file,
+        h('div', { class: 'row' },
+          h('button', { class: 'btn ghost', onclick: () => file.click() }, '📂 ' + t('p1.imgFile')),
+          h('button', { class: 'btn ghost', onclick: fromUrl }, '🔗 ' + t('p1.imgUrl')),
+          h('button', { class: 'btn ghost', onclick: async () => { const m = pick(); if (m) { await deleteImage(imageKey(m)); toast(t('p1.imgRemoved')); } } }, '🗑 ' + t('p1.imgRemove'))),
+        h('p', { class: 'fine' }, t('p1.imgNote')));
+    }
+
     function draw(dir = 0) {
       s = getState();
       if (!slots.length) {
@@ -86,7 +148,7 @@ export default {
       disc.replaceChildren(...[-2, -1, 0, 1, 2].map(k => {
         const sl = at(k);
         return h('div', { class: `disc-item d${k}`, 'aria-hidden': k !== 0 },
-          h('div', { class: 'disc-light', style: { background: glowBackground(sl.hex) } }),
+          h('div', { class: 'disc-light', style: { background: glowBackground(sl.hex) } }, debug ? discImage(sl) : null),
           h('div', { class: 'disc-mark' }, marks(sl)),
           k !== 0 ? h('div', { class: 'disc-tag' }, k < 0 ? t('p1.prev') : t('p1.next')) : null);
       }));
@@ -96,19 +158,19 @@ export default {
       const pale = paleHex(cur.hex);
       const sim = simulateHex(pale, s.cvType);
       const names = cur.members.length ? cur.members.map(m => h('div', { class: 'now-member' },
-        h('span', { class: 'now-mark' }, m.oshi_mark), h('span', null, memberName(m)))) : [h('div', { class: 'now-member muted' }, t('p1.nobody'))];
-      const overlay = debug && cur.members[0]?.image
-        ? h('img', { class: 'member-img', src: cur.members[0].image, alt: '', style: { opacity: String(1 - (getState().overlayOpacity / 100)) } }) : null;
+        h('span', { class: 'now-mark' }, m.oshi_mark), memberLabel(m))) : [h('div', { class: 'now-member muted' }, t('p1.nobody'))];
       info.replaceChildren(
         h('div', { class: 'now-head' },
           h('span', { class: 'now-count' }, `${i + 1}/${n()}`),
           h('span', { class: 'now-color' }, slotColorName(cur))),
-        h('div', { class: 'now-members' }, names),
-        h('div', { class: 'pair' },
-          h('div', { class: 'pair-cell' }, overlay, swatch(pale, t('cv.C.short'), cur.hex)),
+        // color boxes first: a long member list then grows downward instead of pushing them onto the buttons
+        h('div', { class: 'pair', 'data-part': 'pair' },
+          h('div', { class: 'pair-cell' }, swatch(pale, t('cv.C.short'), cur.hex)),
           h('div', { class: 'pair-cell' }, swatch(sim, t(`cv.${s.cvType}.short`), sim))),
         h('div', { class: 'neighbors' },
-          h('span', null, `◀ ${marks(at(-1))}`), h('span', null, `${marks(at(1))} ▶`)));
+          h('span', null, `◀ ${marks(at(-1))}`), h('span', null, `${marks(at(1))} ▶`)),
+        h('div', { class: 'now-members', 'data-part': 'names' }, names));
+      applyParts();
 
       oshiBtn.hidden = !(debug && s.oshiButton);
       const saved = slots.find(sl => sl.color_key === s.oshiColorKey);
@@ -186,6 +248,8 @@ export default {
           stageMembers(st.stageId).map(m => h('option', { value: m.member_id, selected: m.member_id === st.oshiMemberId }, `${m.oshi_mark} ${memberName(m)}`)))),
         field(`${t('p1.lockSize')} (px)`, h('input', { type: 'range', min: '48', max: '140', step: '2', value: st.lockSize,
           oninput: e => { setState({ lockSize: Number(e.target.value) }); placeLock(); } })),
+        partsEditor(),
+        imageEditor(),
       ] : [];
       const close = bottomSheet(h('div', { class: 'stack' },
         h('h2', null, t('p1.settings')),
@@ -251,6 +315,7 @@ export default {
     }
 
     draw();
+    const offImages = onImages(() => draw());
     if (getState().wakeLock) keepAwake(true);
     const onVis = () => { if (document.visibilityState === 'visible' && getState().wakeLock) keepAwake(true); };
     document.addEventListener('visibilitychange', onVis);
@@ -258,6 +323,7 @@ export default {
       if (editing) endEdit();
       buttons.destroy();
       lockRo.disconnect();
+      offImages();
       keepAwake(false);
       document.removeEventListener('visibilitychange', onVis);
     };

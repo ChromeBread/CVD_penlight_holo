@@ -3,7 +3,7 @@
 import { h, t, getState, setState, localized, formatDate } from '../core.js';
 import { buildSlots, DB } from '../data.js';
 import { paleHex, textOn } from '../color.js';
-import { stageSelect, penlightSelect, field, ensureSelection, memberName, slotColorName } from '../ui.js';
+import { stageSelect, penlightSelect, field, ensureSelection, memberName, memberLabel, slotColorName } from '../ui.js';
 
 const MAX_COLORS = 24;
 const NS = 'http://www.w3.org/2000/svg';
@@ -145,7 +145,7 @@ function column(slots) {
     h('div', { class: 'cy-rail', 'aria-hidden': 'true' }, h('span', null, '▼'), h('span', { class: 'cy-rail-bar' }), h('span', null, '▲')),
     h('ol', { class: 'cy-rows' }, slots.map((sl, i) => {
       const pale = paleHex(sl.hex);
-      const names = sl.members.slice(0, MAX_NAMES).map(m => h('span', { class: 'cy-name' }, label(m)));
+      const names = sl.members.slice(0, MAX_NAMES).map(m => h('span', { class: 'cy-name' }, memberLabel(m, true)));
       if (sl.members.length > MAX_NAMES) names.push(h('span', { class: 'cy-name more' }, `+${sl.members.length - MAX_NAMES}`));
       return h('li', { class: 'cy-row' },
         h('span', { class: 'cy-chip', style: { background: pale, color: textOn(pale) } }, h('small', null, i + 1), slotColorName(sl)),

@@ -3,7 +3,7 @@ import { h, t, getState, setState, isDebug, toast } from '../core.js';
 import { buildSlots, stageMembers } from '../data.js';
 import { glowBackground, paleHex } from '../color.js';
 import { createPenlightButtons } from '../penlight.js';
-import { stageSelect, penlightSelect, field, ensureSelection, memberName, slotColorName, fanBackground, hotButton } from '../ui.js';
+import { stageSelect, penlightSelect, field, ensureSelection, memberName, memberLabel, slotColorName, fanBackground, hotButton } from '../ui.js';
 
 const LAYOUT = {
   striped: { x: 0.5, y: 0.6, d: 0.72, r: 0 },
@@ -108,7 +108,7 @@ export default {
         const m = qs[q];
         // the light keeps its color from the last question; the shortest way is counted from here
         startIdx = idx; taps = 0; hotReturn = null; paint();
-        head.replaceChildren(h('small', null, t('p5.q', { n: q + 1, total: qs.length })), h('strong', { class: 'p5-member' }, `${m.oshi_mark} ${memberName(m)}`));
+        head.replaceChildren(h('small', null, t('p5.q', { n: q + 1, total: qs.length })), h('strong', { class: 'p5-member' }, memberLabel(m, true)));
         msg.replaceChildren(...[feedback, h('p', { class: 'fine' }, t('p5.hint'))].filter(Boolean));
         t0 = performance.now();
       }
@@ -137,7 +137,7 @@ export default {
           h('thead', null, h('tr', null, ['#', t('p5.col.member'), t('p5.col.answer'), t('p5.col.result'), t('p5.col.taps'), t('p5.col.time')].map(x => h('th', null, x)))),
           h('tbody', null, answers.map((a, i) => h('tr', null,
             h('td', null, i + 1),
-            h('td', null, `${a.m.oshi_mark} ${memberName(a.m)}`),
+            h('td', null, memberLabel(a.m, true)),
             h('td', null, `${slotColorName(a.chosen)} → ${slotColorName(a.answer)}`),
             h('td', null, `${a.kind === 'wrong' ? '△' : '✓'} ${label(a.p, a.kind, debug)}`),
             h('td', null, a.taps === Infinity ? '💖' : `${a.taps} / ${a.shortest} ${a.kind === 'best' ? t('p5.shortest') : ''}`),

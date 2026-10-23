@@ -31,6 +31,18 @@ export function normalizeDate(v) {
   return m ? `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}` : (v || '');
 }
 
+// Tables keep the date as year / month / day columns so nobody mixes up day and month;
+// older files with one "date" column still work.
+export function rowDate(r) {
+  if (r.year && r.month && r.day) return normalizeDate(`${r.year}-${r.month}-${r.day}`);
+  return normalizeDate(r.date);
+}
+export function dateParts(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');
+  return m ? { year: m[1], month: String(Number(m[2])), day: String(Number(m[3])) } : { year: '', month: '', day: '' };
+}
+export const OSHI_COLS = ['oshi_color_1', 'oshi_color_2', 'oshi_color_3'];
+
 async function loadCsv(path) {
   try {
     const r = await fetch(path, { cache: 'no-cache' });
@@ -49,7 +61,7 @@ export async function loadData() {
     loadCsv('data/builtin/c_penlight_specs.csv'),
     loadCsv('data/builtin/contributors.csv'),
   ]);
-  BASE.members = members.map(m => ({ ...m, date: normalizeDate(m.date) }));
+  BASE.members = members.map(m => ({ ...m, date: rowDate(m) }));
   BASE.colors = colors;
   DB.specs = specs;
   DB.contributors = contributors;
@@ -72,6 +84,17 @@ export function saveUserData(d) {
   applyUserData();
 }
 
+// The live data editor saves what is being edited here while typing, so nothing is lost if the app closes.
+// { kind: 'live' | 'pen', isNew, data, savedAt }
+const DRAFT_KEY = 'cvdph.editdraft.v1';
+export function getDraft() {
+  try { return JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); } catch { return null; }
+}
+export function saveDraft(d) {
+  try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...d, savedAt: new Date().toISOString() })); } catch { /* storage full or blocked */ }
+}
+export function clearDraft() { try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ } }
+
 export const isUserId = id => String(id || '').startsWith('user-');
 export const newUserId = () => `user-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 
@@ -81,6 +104,7 @@ function userRows(d) {
     stage_id: s.id, stage_name_en: s.name, stage_name_ja: s.name, date: s.date || '',
     member_id: `${s.id}-${i}`, name_en: m.name, name_ja: m.name, oshi_mark: m.mark || '',
     color_key: m.color_key, color_hex: m.hex || '', surprise: m.surprise ? 'yes' : 'no', user: 'yes',
+    ...Object.fromEntries(OSHI_COLS.map((k, j) => [k, m.oshiColors?.[j] || ''])),
   })));
   const colors = d.penlights.flatMap(p => p.colors.map((c, i) => ({
     penlight_id: p.id, penlight_name: p.name, order: String(i + 1), color_key: c.color_key,
