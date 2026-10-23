@@ -318,7 +318,7 @@
   "p2.check.volume": "Set volume to zero / silent mode",
   "p2.check.alarm": "Turned off alarms and timers",
   "p2.check.brightness": "Lowered screen brightness (so it does not dazzle others)",
-  "p2.check.streetpass": "Turned on StreetPass on the dual-screen handheld game console",
+  "p2.check.passby": "Turned on the pass-by data exchange on the dual-screen handheld game console",
   "p2.check.charge": "Charged up in case a photo-OK part starts suddenly",
   "p2.check.offline": "Checked for updates in “About this app” so it works offline",
   "p2.resetChecks": "Reset checklist",
@@ -404,7 +404,8 @@
     "Do you have a drink? I need to take medicine.",
     "Do you have a drink? I'm thirsty.",
     "Do you have a precision screwdriver?",
-    "Do you have batteries?"
+    "Do you have batteries?",
+    "Do you have a power bank?"
   ],
   "p9.lines": ["Ultra orange lights might not be good for the eyes.", "↑ I showed you this screen after confirming on the official event site that they are banned."],
   "p10.lines": ["It seems photos are not allowed in the venue now.", "↑ I showed you this screen after confirming on the official event site that it is banned.", "Please keep the memory and take it home with care."],

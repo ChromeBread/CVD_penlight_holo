@@ -1,7 +1,7 @@
 // Page 2: safety warning, how to use each page, pre-live checklist.
 import { h, t, getState, setState, pageNo, isDebug } from '../core.js';
 
-const CHECKS = ['airplane', 'power', 'volume', 'alarm', 'brightness', 'streetpass', 'charge', 'offline'];
+const CHECKS = ['airplane', 'power', 'volume', 'alarm', 'brightness', 'passby', 'charge', 'offline'];
 const GUIDE_PAGES = [1, 3, 5, 13, 15, 16, 20];
 const DEBUG_PAGES = [4, 6, 7, 8, 9, 10, 11, 12, 14, 17, 18, 19];   // explained only while debug mode is on
 
