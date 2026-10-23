@@ -85,7 +85,8 @@ input[type=range] { width: 100%; accent-color: var(--accent); min-height: 32px; 
   background: var(--panel); padding: calc(var(--safe-t) + 8px) 12px calc(var(--safe-b) + 16px);
   animation: slideRight .18s ease-out;
 }
-.menu-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.menu-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.menu-head strong { line-height: 1.35; overflow-wrap: anywhere; padding-top: 6px; }
 .menu-list { display: grid; gap: 2px; margin: 12px 0; }
 .menu-item { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 10px; border: 0; border-radius: 10px; background: transparent; text-align: left; cursor: pointer; }
 .menu-item.active, .menu-item:active { background: var(--panel-2); }

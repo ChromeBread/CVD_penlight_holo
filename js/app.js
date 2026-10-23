@@ -56,7 +56,7 @@ function openMenu() {
   }, LANGS.map(l => h('option', { value: l.code, selected: l.code === currentLang() }, l.label)));
   const sheet = h('div', { class: 'menu-backdrop', onclick: e => { if (e.target === sheet) close(); } },
     h('nav', { class: 'menu' },
-      h('div', { class: 'menu-head' }, h('strong', null, APP.title), h('button', { class: 'icon-btn', 'aria-label': t('common.close'), onclick: close }, '✕')),
+      h('div', { class: 'menu-head' }, h('strong', null, t('app.title')), h('button', { class: 'icon-btn', 'aria-label': t('common.close'), onclick: close }, '✕')),
       h('label', { class: 'field' }, h('span', null, '🌐 ' + t('nav.language')), langSel),
       h('div', { class: 'menu-list' }, list),
       h('p', { class: 'fine' }, t('common.unofficial'))));

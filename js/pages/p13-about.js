@@ -65,7 +65,7 @@ export default {
         toggle(t('p13.debug'), isDebug(), v => setDebug(v)),
         h('p', { class: 'fine' }, t('p13.debugNote'))),
       h('dl', { class: 'kv' },
-        h('dt', null, t('p13.name')), h('dd', null, `${APP.title} (${APP.code})`),
+        h('dt', null, t('p13.name')), h('dd', null, `${t('app.title')} (${APP.code})`),
         h('dt', null, t('p13.version')), h('dd', null, APP.version),
         h('dt', null, t('p13.build')), h('dd', null, APP.build)),
       updateSection(),
