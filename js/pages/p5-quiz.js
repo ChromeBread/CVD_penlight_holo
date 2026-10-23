@@ -45,7 +45,7 @@ export default {
       const debug = isDebug();
       const qs = shuffle(pool).slice(0, Math.min(MAX_Q, pool.length));
       const pt = points(debug);
-      let on = false, idx = 0, q = -1, taps = 0, t0 = 0;
+      let on = false, idx = 0, q = -1, taps = 0, t0 = 0, startIdx = 0, feedback = null;
       const answers = [];
 
       const light = h('div', { class: 'p5-light off' });
@@ -106,19 +106,27 @@ export default {
         q++;
         if (q >= qs.length) return result();
         const m = qs[q];
-        idx = 0; taps = 0; hotReturn = null; paint();
+        // the light keeps its color from the last question; the shortest way is counted from here
+        startIdx = idx; taps = 0; hotReturn = null; paint();
         head.replaceChildren(h('small', null, t('p5.q', { n: q + 1, total: qs.length })), h('strong', { class: 'p5-member' }, `${m.oshi_mark} ${memberName(m)}`));
-        msg.replaceChildren(h('p', { class: 'fine' }, t('p5.hint')));
+        msg.replaceChildren(...[feedback, h('p', { class: 'fine' }, t('p5.hint'))].filter(Boolean));
         t0 = performance.now();
       }
 
       function submit() {
         const m = qs[q], n = slots.length;
         const target = slots.findIndex(sl => sl.color_key === m.color_key);
-        const shortest = Math.min(target, n - target);
+        const shortest = Math.min((target - startIdx + n) % n, (startIdx - target + n) % n);
         const correct = slots[idx].color_key === m.color_key;
         const kind = !correct ? 'wrong' : taps <= shortest ? 'best' : 'ok';
         answers.push({ m, kind, p: pt[kind], taps, shortest, sec: (performance.now() - t0) / 1000, chosen: slots[idx], answer: slots[target] });
+        // tell the result right away, with the running total
+        const p = label(pt[kind], kind, debug);
+        const total = answers.reduce((a, x) => a + x.p, 0);
+        const text = kind === 'best' ? t('p5.fbBest', { p }) : kind === 'ok' ? t('p5.fbOk', { p, s: shortest }) : t('p5.fbWrong', { p, color: slotColorName(slots[target]) });
+        feedback = h('div', { class: `p5-feedback ${kind}` },
+          h('strong', null, text),
+          h('small', null, `${m.oshi_mark} ${memberName(m)} · ${t('p5.total', { score: debug ? label(total, 'best', true) : total })}`));
         nextQ();
       }
 
@@ -135,6 +143,7 @@ export default {
             h('td', null, a.taps === Infinity ? '💖' : `${a.taps} / ${a.shortest} ${a.kind === 'best' ? t('p5.shortest') : ''}`),
             h('td', null, `${a.sec.toFixed(2)}s`))))));
         root.replaceChildren(h('div', { class: 'page stack center' },
+          feedback,
           h('p', { class: 'hooray' }, t('p5.hooray')),
           h('p', { class: 'score' }, `${debug ? label(total, 'best', true) : total} / ${max}`),
           debug ? h('button', { class: 'btn', onclick: () => { list.hidden = !list.hidden; } }, t('p5.wakatta')) : null,

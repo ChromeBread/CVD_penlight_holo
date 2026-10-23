@@ -180,15 +180,22 @@ input[type=range] { width: 100%; accent-color: var(--accent); min-height: 32px; 
 .show-hits .pl-svg:not(.editing) .pl-hitPlain path { fill: #ffb3d9; fill-opacity: var(--hit-a, .4); stroke: #ffb3d9; stroke-dasharray: 6 4; }
 
 /* ---------- page 3 ---------- */
-.p3 { position: absolute; inset: 0; display: grid; grid-template-rows: 1fr auto 1.3fr; touch-action: none; user-select: none; }
-.p3-half { padding: 10px 14px; display: flex; flex-direction: column; gap: 8px; align-items: center; text-align: center; }
-.p3-top { transform: rotate(180deg); background: #1a1c24; border-bottom: 1px dashed var(--line); }
-.p3-bottom { position: relative; }
-.p3-pad { position: relative; flex: 1; width: 100%; min-height: 160px; }
+.p3 { position: absolute; inset: 0; display: grid; grid-template-rows: minmax(0, 1fr) auto auto; overflow: hidden; touch-action: none; user-select: none; }
+.p3-half { padding: 8px 14px; display: flex; flex-direction: column; gap: 6px; align-items: center; text-align: center; min-height: 0; }
+.p3-top { transform: rotate(180deg); background: #1a1c24; border-bottom: 1px dashed var(--line); overflow: auto; justify-content: center; }
+.p3-bottom { position: relative; padding-bottom: 0; }
+/* only the top ~40% of the circle is on screen: pad height = 0.4 x circle diameter (see GAME_LAYOUT) */
+.p3-pad { position: relative; width: calc(100% + 28px); margin: 0 -14px; height: min(36vw, 280px); flex: none; }
 .p3-target { display: grid; }
 .p3-target strong { font-size: 1.4rem; }
-.p3-light { width: 34vmin; height: 34vmin; margin: 8px auto; border-radius: 50%; box-shadow: 0 0 40px #fff5; }
-.p3-reveal { display: flex; gap: 8px; align-items: center; min-height: 64px; }
+.p3-discs { display: flex; justify-content: center; align-items: center; gap: 2vmin; padding: 6px 0; }
+.p3-disc { border-radius: 50%; aspect-ratio: 1; flex: none; }
+.p3-disc.d0 { width: 26vmin; max-width: 150px; box-shadow: 0 0 34px #fff5; }
+.p3-disc.d-1, .p3-disc.d1 { width: 13vmin; max-width: 72px; opacity: .75; }
+.p3-disc.d-2, .p3-disc.d2 { width: 9vmin; max-width: 52px; opacity: .45; }
+.p3-reveal { display: flex; gap: 8px; align-items: center; min-height: 48px; }
+.p3-sub { gap: 10px; flex-wrap: wrap; }
+.p3-fix { min-height: 34px; padding: 0 10px; font-size: .8rem; }
 .p3-tally { font-size: 1.1rem; font-variant-numeric: tabular-nums; }
 .btn.judge { min-height: 60px; min-width: 40%; font-size: 1.2rem; }
 .btn.judge.good { background: var(--good); }
@@ -348,3 +355,9 @@ input[type=range]:focus-visible { outline: 2px solid var(--accent); outline-offs
 .save-bar.ok .save-fill { background: #7fd88a; }
 .save-bar.bad { border-color: var(--danger); }
 .save-bar.bad .save-fill { background: var(--danger); }
+.p5-feedback { display: grid; gap: 2px; padding: 8px 12px; margin-bottom: 6px; border-radius: 12px; border: 2px solid var(--line); background: var(--panel); }
+.p5-feedback strong { font-size: 1.15rem; }
+.p5-feedback.best, .p5-feedback.ok { border-color: #7fd88a; }
+.p5-feedback.best strong, .p5-feedback.ok strong { color: #a6f0b0; }
+.p5-feedback.wrong { border-color: #ffb36b; }
+.p5-feedback.wrong strong { color: #ffd2a6; }

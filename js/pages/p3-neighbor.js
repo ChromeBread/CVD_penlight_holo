@@ -1,19 +1,22 @@
 // Page 3: "Color match with your neighbor" - a two-player game on one screen.
-// Top half (upside down) = common color vision player, bottom half = color vision diversity player.
-import { h, t, getState } from '../core.js';
+// Top (upside down, kept small) = common color vision player, bottom = color vision diversity player.
+import { h, t, toast } from '../core.js';
 import { buildSlots, stageMembers } from '../data.js';
 import { glowBackground, paleHex } from '../color.js';
 import { createPenlightButtons } from '../penlight.js';
 import { stageSelect, penlightSelect, field, ensureSelection, memberName, slotColorName, swatch } from '../ui.js';
 
 // Fixed layout for the game: edits from Page 1 never apply here.
+// The circle is much bigger than the pad and sits low, so only its top ~40% is on screen:
+// pad height = 0.4 x diameter (see .p3-pad), diameter = 2.5 x pad height, center 1.25 below the top.
 const GAME_LAYOUT = {
-  striped: { x: 0.5, y: 0.66, d: 0.78, r: 0 },
-  plain: { x: 0.5, y: 0.66, d: 0.78, r: 180 },
-  hitStriped: { x: 0.5, y: 0.66, d: 0.78, r: 0, shape: 'semi' },
-  hitPlain: { x: 0.5, y: 0.66, d: 0.78, r: 180, shape: 'semi' },
+  striped: { x: 0.5, y: 1.25, d: 2.5, r: 0 },
+  plain: { x: 0.5, y: 1.25, d: 2.5, r: 180 },
+  hitStriped: { x: 0.5, y: 1.25, d: 2.5, r: 0, shape: 'semi' },
+  hitPlain: { x: 0.5, y: 1.25, d: 2.5, r: 180, shape: 'semi' },
 };
 const ROUNDS = 10;
+const MARK = ok => (ok ? '○' : '△');
 
 export default {
   id: 3,
@@ -36,23 +39,27 @@ export default {
       const slots = buildSlots(stageId, penlightId);
       const pool = stageMembers(stageId).filter(m => slots.some(sl => sl.color_key === m.color_key));
       if (!pool.length) { setup(); return; }
-      let idx = 0, round = 0, great = 0, close = 0, target = null, judging = false;
+      let idx = 0, round = 0, target = null, judging = false;
+      const results = [];  // true = ○, false = △, one per judged round
+      const count = ok => results.filter(x => x === ok).length;
 
-      const light = h('div', { class: 'p3-light' });
+      // the current light with the two previous / next colors on each side
+      const discs = h('div', { class: 'p3-discs' });
       const topTarget = h('div', { class: 'p3-target' });
       const botTarget = h('div', { class: 'p3-target' });
       const reveal = h('div', { class: 'p3-reveal' });
       const tally = h('div', { class: 'p3-tally' });
+      const fixBtn = h('button', { class: 'btn ghost p3-fix', hidden: true, onclick: fixLast }, t('p3.fix'));
       const top = h('div', { class: 'p3-half p3-top' },
         topTarget, reveal,
         h('div', { class: 'row center' },
           h('button', { class: 'btn judge good', onclick: () => judge(true) }, t('p3.great')),
           h('button', { class: 'btn judge close', onclick: () => judge(false) }, t('p3.close'))),
-        tally,
+        h('div', { class: 'row center p3-sub' }, tally, fixBtn),
         h('p', { class: 'fine' }, t('p3.topRole')));
       const padArea = h('div', { class: 'p3-pad' });
       const bottom = h('div', { class: 'p3-half p3-bottom' }, botTarget, h('p', { class: 'fine' }, t('p3.bottomRole')), padArea);
-      root.replaceChildren(h('div', { class: 'p3' }, top, light, bottom));
+      root.replaceChildren(h('div', { class: 'p3' }, top, discs, bottom));
 
       buttons = createPenlightButtons(padArea, {
         layout: GAME_LAYOUT,
@@ -61,7 +68,12 @@ export default {
         onPrev: () => { idx = (idx - 1 + slots.length) % slots.length; paint(); },
       });
 
-      function paint() { light.style.background = glowBackground(slots[idx].hex); }
+      function paint() {
+        const at = k => slots[((idx + k) % slots.length + slots.length) % slots.length];
+        discs.replaceChildren(...[-2, -1, 0, 1, 2].map(k =>
+          h('div', { class: `p3-disc d${k}`, style: { background: glowBackground(at(k).hex) }, 'aria-hidden': k !== 0 })));
+      }
+      const showTally = () => { tally.textContent = `○ ${count(true)}   △ ${count(false)}`; };
 
       function next() {
         round++;
@@ -72,7 +84,7 @@ export default {
         topTarget.replaceChildren(h('small', null, q), h('strong', null, label));
         botTarget.replaceChildren(h('small', null, q), h('strong', null, label));
         reveal.replaceChildren();
-        tally.textContent = `○ ${great}   △ ${close}`;
+        showTally();
         judging = false;
         paint();
       }
@@ -80,18 +92,29 @@ export default {
       function judge(ok) {
         if (judging) return;
         judging = true;
-        ok ? great++ : close++;
+        results.push(ok);
+        fixBtn.hidden = false;
         const ans = slots.find(sl => sl.color_key === target.color_key);
         reveal.replaceChildren(h('span', null, t('p3.answer')), swatch(paleHex(ans.hex), slotColorName(ans)));
-        tally.textContent = `○ ${great}   △ ${close}`;
+        showTally();
         setTimeout(next, 1600);
+      }
+
+      // the common color vision player can flip the last judgment once
+      function fixLast() {
+        if (!results.length) return;
+        const i = results.length - 1;
+        results[i] = !results[i];
+        fixBtn.hidden = true;
+        showTally();
+        toast(t('p3.fixed', { from: MARK(!results[i]), to: MARK(results[i]) }));
       }
 
       function finish() {
         buttons.destroy(); buttons = null;
         const msg = h('div', { class: 'stack center' },
           h('p', { class: 'big-text' }, t('p3.finished')),
-          h('p', null, `○ ${great}   △ ${close}`),
+          h('p', null, `○ ${count(true)}   △ ${count(false)}`),
           h('p', null, t('p3.thanks')));
         root.replaceChildren(h('div', { class: 'p3' },
           h('div', { class: 'p3-half p3-top' }, msg.cloneNode(true)),
