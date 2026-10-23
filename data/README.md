@@ -28,6 +28,7 @@ One row = one member at one stage (a live, a day, or a block — anything you wa
 | `verified` | | `yes` when checked against an official source. |
 | `source` | | URL of the source you checked. |
 | `note` | | Anything else. |
+| `surprise` | | `yes` for a surprise guest. Hidden unless debug mode turns "show surprise guest members" on. Default `no`. |
 
 ## b_penlight_colors.csv — table b: penlight color order
 
@@ -46,6 +47,8 @@ One row = one color slot of one penlight, in the order the button cycles.
 ## c_penlight_specs.csv — penlight specs (debug page 14)
 
 `penlight_id, penlight_name, maker, release, length_cm, screw (coin / precision), oshi_button (yes/no), brightness_button (yes/no), color_count, battery, note, verified, source`
+
+(The current penlight comes from https://cart.hololivepro.com/v2/product/detail/HLL0261 )
 
 ## contributors.csv — credits
 

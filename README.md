@@ -19,7 +19,9 @@ Made by **BlackDream feat. ChromeBread(Dead Beats)**.
 | 4 Read colors from a picture | Open or take a photo, trace to read the color (HEX, rough name, HSL/HSV/CMYK, simulations). |
 | 5 Oshi color challenge | Quiz for common color vision fans. |
 | 13 About | Hashtag, debug switch, version, credits. |
-| 6–12, 14 | Debug mode pages (phrase cards, message cards, test color bars, debug settings). |
+| 15 Penlight cycle chart (circle) | Pick a live and a penlight: every color in button order around a circle, with the members for each color. |
+| 16 Penlight cycle chart (vertical) | The same as a vertical list, easy to read on a phone. |
+| 6–12, 14 | Debug mode pages: phrase cards; 7 “Thank you!👍”, 8 “Sorry”, 9 Ultra orange🚫🍊✨, 10 Photos🚫📸, 11 “🚑Medical emergency!” (its page number shows the emergency number of the language: 119 / 999 / 120); 12 test color bars; 14 debug settings (surprise guests, hit-area overlay, image opacity). |
 
 Languages: 日本語 / English / 한국어 / 简体中文 / 繁體中文 / Bahasa Indonesia (auto-detected from the device / browser).
 

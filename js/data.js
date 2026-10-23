@@ -1,4 +1,5 @@
 // Loads the fan-editable CSV tables in /data.
+import { getState, isDebug } from './core.js';
 
 export function parseCsv(text) {
   text = text.replace(/^﻿/, '');
@@ -61,8 +62,10 @@ export async function loadData() {
   DB.penlights = [...pl.values()];
 }
 
+// Surprise guests (surprise = yes) stay hidden unless debug mode turns them on.
 export function stageMembers(stageId) {
-  return DB.members.filter(m => m.stage_id === stageId);
+  const surprise = isDebug() && getState().showSurprise;
+  return DB.members.filter(m => m.stage_id === stageId && (surprise || m.surprise !== 'yes'));
 }
 
 export function getPenlight(id) {

@@ -10,8 +10,12 @@ import { p7, p8, p9, p10, p11 } from './pages/p7-11-cards.js';
 import p12 from './pages/p12-test.js';
 import p13 from './pages/p13-about.js';
 import p14 from './pages/p14-debug.js';
+import { p15, p16 } from './pages/p15-16-cycle.js';
 
-const PAGES = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14];
+const PAGES = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16];
+
+// Shown page number. Page 11 shows the local emergency number (119, 999, 120 ...).
+const pageNo = p => { const k = `page.${p.id}.no`, v = t(k); return v === k ? String(p.id) : v; };
 const view = document.getElementById('view');
 const bar = document.getElementById('bar');
 let cleanup = null;
@@ -28,7 +32,7 @@ function go(n) { location.hash = `#/${n}`; }
 function renderBar(page) {
   bar.replaceChildren(
     h('button', { class: 'icon-btn', 'aria-label': t('nav.menu'), onclick: openMenu }, '☰'),
-    h('div', { class: 'bar-title' }, h('span', { class: 'bar-no' }, `P${page.id}`), t(`page.${page.id}`)),
+    h('div', { class: 'bar-title' }, h('span', { class: 'bar-no' }, `P${pageNo(page)}`), t(`page.${page.id}`)),
     h('div', { id: 'bar-actions', class: 'bar-actions' }),
   );
 }
@@ -47,7 +51,7 @@ function openMenu() {
   const close = () => sheet.remove();
   const list = PAGES.filter(p => !p.debug || isDebug()).map(p =>
     h('button', { class: 'menu-item' + (p === pageFromHash() ? ' active' : ''), onclick: () => { close(); go(p.id); } },
-      h('span', { class: 'menu-no' }, p.id), t(`page.${p.id}`), p.debug ? h('span', { class: 'tag' }, 'DEBUG') : null));
+      h('span', { class: 'menu-no' }, pageNo(p)), t(`page.${p.id}`), p.debug ? h('span', { class: 'tag' }, 'DEBUG') : null));
   const langSel = h('select', {
     class: 'select', 'aria-label': t('nav.language'),
     onchange: async e => { setState({ lang: e.target.value }); await loadLang(e.target.value); close(); render(); },

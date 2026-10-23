@@ -3,7 +3,7 @@
 export const APP = {
   code: 'CVDp-h',
   title: 'CVDp-h', // release title: TBD
-  version: '0.1.2',
+  version: '0.1.3',
   build: '2026-10-23',
   author: 'BlackDream feat. ChromeBread(Dead Beats)',
   hashtag: '#CVDph',
@@ -45,7 +45,9 @@ const defaults = {
   oshiColorKey: null,
   hotReturn: null,
   oshiButton: false,
-  fanMode: false,
+  showSurprise: false, // debug only
+  showHits: false,     // debug only
+  hitOpacity: 60,
   overlayOpacity: 45,
   checklist: {},
 };
@@ -59,6 +61,7 @@ export function getState() { return state; }
 export function setState(patch) {
   state = { ...state, ...patch };
   try { localStorage.setItem(KEY, JSON.stringify(state)); } catch { /* ignore */ }
+  applyView();
 }
 
 // ---------- debug mode: memory only, resets when the page is left ----------
@@ -68,9 +71,17 @@ export function isDebug() { return debug; }
 export function setDebug(on) {
   debug = !!on;
   document.documentElement.classList.toggle('debug', debug);
+  applyView();
   debugListeners.forEach(f => f(debug));
 }
 export function onDebug(f) { debugListeners.add(f); return () => debugListeners.delete(f); }
+
+// Debug-only view options as classes on <html> (hit-area overlay).
+function applyView() {
+  const r = document.documentElement;
+  r.classList.toggle('show-hits', debug && state.showHits);
+  r.style.setProperty('--hit-a', String(1 - state.hitOpacity / 100));
+}
 window.addEventListener('pagehide', () => setDebug(false));
 window.addEventListener('pageshow', e => { if (e.persisted) setDebug(false); });
 

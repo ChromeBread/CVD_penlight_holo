@@ -93,7 +93,7 @@ export function createPenlightButtons(container, opts = {}) {
     for (const k of KEYS) groups[k].classList.toggle('selected', edit && k === selected);
   }
 
-  const ro = new ResizeObserver(render);
+  const ro = new ResizeObserver(() => requestAnimationFrame(render));
   ro.observe(container);
 
   // ---------- press handling with mis-tap guards ----------

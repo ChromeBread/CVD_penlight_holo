@@ -3,7 +3,7 @@ import { h, t, getState, setState, isDebug, toast } from '../core.js';
 import { buildSlots, unmatchedMembers, stageMembers } from '../data.js';
 import { paleHex, simulateHex, glowBackground } from '../color.js';
 import { createPenlightButtons, cloneLayout, defaultLayout, KEYS } from '../penlight.js';
-import { stageSelect, penlightSelect, cvTypeSelect, field, toggle, ensureSelection, memberName, slotColorName, swatch, fanBackground, bottomSheet, hotButton } from '../ui.js';
+import { stageSelect, penlightSelect, cvTypeSelect, field, toggle, ensureSelection, memberName, slotColorName, swatch, bottomSheet, hotButton } from '../ui.js';
 
 let wakeLock = null;
 async function keepAwake(on) {
@@ -30,9 +30,8 @@ export default {
     const lockBanner = h('div', { class: 'lock-banner', hidden: true }, '🔒 ' + t('p1.lockedHint'));
     const oshiBtn = hotButton('💖 ' + t('p1.oshi'), { onSave: saveOshi, onJump: jumpOshi });
     oshiBtn.hidden = true;
-    const fanBtn = h('button', { class: 'btn ghost fan-btn', hidden: true, onclick: () => { setState({ fanMode: !getState().fanMode }); draw(); } }, '◔ ' + t('p1.fanMode'));
     const editBar = h('div', { class: 'edit-bar', hidden: true });
-    const wrap = h('div', { class: 'p1' }, disc, info, stage, lockBanner, oshiBtn, fanBtn, editBar);
+    const wrap = h('div', { class: 'p1' }, disc, info, stage, lockBanner, oshiBtn, editBar);
     root.append(wrap);
 
     const buttons = createPenlightButtons(stage, {
@@ -86,9 +85,8 @@ export default {
       // disc row: -2 .. +2
       disc.replaceChildren(...[-2, -1, 0, 1, 2].map(k => {
         const sl = at(k);
-        const bg = s.fanMode && debug && k === 0 ? fanBackground(slots) : glowBackground(sl.hex);
         return h('div', { class: `disc-item d${k}`, 'aria-hidden': k !== 0 },
-          h('div', { class: 'disc-light', style: { background: bg } }),
+          h('div', { class: 'disc-light', style: { background: glowBackground(sl.hex) } }),
           h('div', { class: 'disc-mark' }, marks(sl)),
           k !== 0 ? h('div', { class: 'disc-tag' }, k < 0 ? t('p1.prev') : t('p1.next')) : null);
       }));
@@ -115,24 +113,20 @@ export default {
       oshiBtn.hidden = !(debug && s.oshiButton);
       const saved = slots.find(sl => sl.color_key === s.oshiColorKey);
       oshiBtn.style.boxShadow = saved ? `0 0 0 3px ${paleHex(saved.hex)}` : '';
-      fanBtn.hidden = !debug;
     }
 
     // ---------- top bar actions: lock + settings ----------
     const actions = document.getElementById('bar-actions');
-    let lockTimer = 0;
     const lockBtn = h('button', { class: 'icon-btn', 'aria-label': t('p1.lock') }, '🔓');
     const setLock = on => {
       locked = on; lockBtn.textContent = on ? '🔒' : '🔓';
       lockBanner.hidden = !on; wrap.classList.toggle('locked', on);
     };
-    lockBtn.addEventListener('pointerdown', () => {
-      if (!locked) { setLock(true); return; }
-      lockTimer = setTimeout(() => { setLock(false); toast(t('p1.unlocked')); }, 800);
+    // one press locks, the next press unlocks
+    lockBtn.addEventListener('click', () => {
+      setLock(!locked);
+      if (!locked) toast(t('p1.unlocked'));
     });
-    const cancelLock = () => clearTimeout(lockTimer);
-    lockBtn.addEventListener('pointerup', cancelLock);
-    lockBtn.addEventListener('pointerleave', cancelLock);
     actions.append(lockBtn, h('button', { class: 'icon-btn', 'aria-label': t('p1.settings'), onclick: openSettings }, '⚙'));
 
     function reload() {
@@ -154,7 +148,6 @@ export default {
         } },
           h('option', { value: '' }, '—'),
           stageMembers(st.stageId).map(m => h('option', { value: m.member_id, selected: m.member_id === st.oshiMemberId }, `${m.oshi_mark} ${memberName(m)}`)))),
-        toggle(t('p1.fanMode'), st.fanMode, v => { setState({ fanMode: v }); draw(); }),
       ] : [];
       const close = bottomSheet(h('div', { class: 'stack' },
         h('h2', null, t('p1.settings')),
@@ -201,9 +194,10 @@ export default {
       } }, t('p1.matchLook')) : null;
       const presetSel = h('select', { class: 'select' }, h('option', { value: '' }, t('p1.presets')), presets.map((p, i) => h('option', { value: String(i) }, p.name)));
       editBar.replaceChildren(
-        h('div', { class: 'chips' }, KEYS.map(chip)),
+        h('div', { class: 'edit-head' }, h('div', { class: 'chips' }, KEYS.map(chip)),
+          h('button', { class: 'icon-btn edit-close', 'aria-label': t('common.close'), onclick: endEdit }, '✕')),
         h('p', { class: 'fine' }, t('p1.editHelp')),
-        field(t('p1.size'), size), field(t('p1.rotate'), rot), shape, copyBtn,
+        field(t('p1.size'), size), field(t('p1.rotate'), rot), ...[shape, copyBtn].filter(Boolean),
         h('div', { class: 'row' },
           presetSel,
           h('button', { class: 'btn ghost', onclick: () => { const p = presets[Number(presetSel.value)]; if (p) { buttons.setLayout(p.layout); setState({ layout: cloneLayout(p.layout) }); buildEditBar(); } } }, t('p1.load')),
