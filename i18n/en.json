@@ -1,7 +1,7 @@
 {
   "p5.fbBest": "✓ Correct! Fewest presses: {p}",
   "p5.fbOk": "✓ Correct! {p} (fewest was {s})",
-  "p5.fbWrong": "✗ Not quite… it was {color} ({p})",
+  "p5.fbWrong": "△ So close! It was {color}. You will get the next one! ({p})",
   "p5.total": "Total so far: {score}",
   "p3.fix": "↩ Sorry! I may have judged the last one wrong",
   "p3.fixed": "Changed the last one: {from} → {to}",
@@ -289,7 +289,7 @@
     "The lock button size on page 1 can be changed (in ⚙).",
     "Surprise guest members can be shown or hidden (OFF by default).",
     "Half-circle hit areas can be shown in color, with adjustable transparency.",
-    "Page 5 scores become \"95 pts♠\" (correct, fewest presses) / \"67 pts\" (correct, longer way) / \"2 pts♠\" (wrong), and \"Got it!\" shows your answer list.",
+    "Page 5 scores become \"95 pts♠\" (correct, fewest presses) / \"67 pts\" (correct, longer way) / \"2 pts♠\" (so close!), and \"Got it!\" shows your answer list.",
     "Member images (the image column in the data) are shown on top of the penlight color, see-through.",
     "Pages 6–12 and 14 appear.",
     "Leaving the page or closing the app turns debug mode off again."

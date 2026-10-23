@@ -139,7 +139,7 @@ export default {
             h('td', null, i + 1),
             h('td', null, `${a.m.oshi_mark} ${memberName(a.m)}`),
             h('td', null, `${slotColorName(a.chosen)} → ${slotColorName(a.answer)}`),
-            h('td', null, `${a.kind === 'wrong' ? '✗' : '✓'} ${label(a.p, a.kind, debug)}`),
+            h('td', null, `${a.kind === 'wrong' ? '△' : '✓'} ${label(a.p, a.kind, debug)}`),
             h('td', null, a.taps === Infinity ? '💖' : `${a.taps} / ${a.shortest} ${a.kind === 'best' ? t('p5.shortest') : ''}`),
             h('td', null, `${a.sec.toFixed(2)}s`))))));
         root.replaceChildren(h('div', { class: 'page stack center' },

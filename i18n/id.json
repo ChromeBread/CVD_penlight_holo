@@ -1,7 +1,7 @@
 {
   "p5.fbBest": "✓ Benar! Tekanan tersedikit: {p}",
   "p5.fbOk": "✓ Benar! {p} (tersedikit {s} kali)",
-  "p5.fbWrong": "✗ Sayang… jawabannya {color} ({p})",
+  "p5.fbWrong": "△ Hampir! Jawabannya {color}. Soal berikutnya pasti bisa! ({p})",
   "p5.total": "Total sejauh ini: {score}",
   "p3.fix": "↩ Maaf! Soal tadi mungkin salah kunilai",
   "p3.fixed": "Soal tadi diubah: {from} → {to}",
@@ -289,7 +289,7 @@
     "Ukuran tombol kunci di halaman 1 bisa diubah (atur di ⚙).",
     "Member kejutan bisa ditampilkan atau disembunyikan (default OFF).",
     "Area sentuh tombol setengah lingkaran bisa ditampilkan berwarna, dengan transparansi yang bisa diatur.",
-    "Skor halaman 5 menjadi \"95 poin♠\" (benar, tekanan tersedikit) / \"67 poin\" (benar, jalan memutar) / \"2 poin♠\" (salah), dan \"Paham!\" menampilkan daftar jawaban.",
+    "Skor halaman 5 menjadi \"95 poin♠\" (benar, tekanan tersedikit) / \"67 poin\" (benar, jalan memutar) / \"2 poin♠\" (hampir!), dan \"Paham!\" menampilkan daftar jawaban.",
     "Gambar member (kolom image di data) ditampilkan tembus pandang di atas warna penlight.",
     "Halaman 6–12 dan 14 muncul.",
     "Meninggalkan halaman atau menutup aplikasi akan mematikan mode debug."

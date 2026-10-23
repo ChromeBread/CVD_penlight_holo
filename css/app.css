@@ -359,5 +359,5 @@ input[type=range]:focus-visible { outline: 2px solid var(--accent); outline-offs
 .p5-feedback strong { font-size: 1.15rem; }
 .p5-feedback.best, .p5-feedback.ok { border-color: #7fd88a; }
 .p5-feedback.best strong, .p5-feedback.ok strong { color: #a6f0b0; }
-.p5-feedback.wrong { border-color: #ffb36b; }
-.p5-feedback.wrong strong { color: #ffd2a6; }
+.p5-feedback.wrong { border-color: #ffd27a; }
+.p5-feedback.wrong strong { color: #ffe6a8; }
