@@ -1,4 +1,9 @@
 {
+  "p14.crashClear": "Hapus catatan",
+  "p14.crashNone": "Belum ada catatan.",
+  "p14.crashItem": "Setelah {at}: tertutup saat menampilkan Page {page} ({min}+ menit setelah dibuka, v{v})",
+  "p14.crashesNote": "Jika browser tertutup mendadak saat aplikasi ini tampil, halaman yang terbuka saat itu dicatat (maks. 10, hanya di perangkat ini). Saat mencari penyebabnya, mohon bagikan catatan ini.",
+  "p14.crashes": "Catatan penutupan mendadak",
   "ed.toCsv": "Ke editor CSV",
   "ed.moreCsv": "Untuk mengatur semua kolom secara detail dalam bentuk tabel, gunakan editor CSV (halaman 19).",
   "beta.link": "Tentang beta",

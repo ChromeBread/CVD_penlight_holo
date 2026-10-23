@@ -53,11 +53,38 @@ function render() {
   const page = pageFromHash();
   if (cleanup) { try { cleanup(); } catch { /* ignore */ } cleanup = null; }
   document.body.dataset.page = page.id;
+  markSession(true, page.id);
   renderBar(page);
   view.replaceChildren();
   view.scrollTop = 0;
   cleanup = page.render(view, { go }) || null;
 }
+
+// Crash record: while the app is on screen the session is marked open with the page shown. If the browser
+// is closed by the system (not by going to the background first), the next launch finds it still open and
+// keeps a short note (page, how long it ran). Shown on debug page 14; stays on this device.
+const SESSION_KEY = 'cvdph.session.v1', CRASH_KEY = 'cvdph.crashes.v1';
+let sessionStart = Date.now();
+function markSession(open, pageId) {
+  try {
+    const s = JSON.parse(localStorage.getItem(SESSION_KEY) || '{}');
+    localStorage.setItem(SESSION_KEY, JSON.stringify({ ...s, open, since: sessionStart, at: Date.now(), page: pageId ?? s.page, v: APP.version }));
+  } catch { /* storage blocked */ }
+}
+function checkLastSession() {
+  try {
+    const s = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
+    if (!s?.open) return;
+    const list = JSON.parse(localStorage.getItem(CRASH_KEY) || '[]');
+    list.unshift({ page: s.page, since: s.since, at: s.at, v: s.v });
+    localStorage.setItem(CRASH_KEY, JSON.stringify(list.slice(0, 10)));
+  } catch { /* ignore */ }
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') markSession(false);
+  else { sessionStart = Date.now(); markSession(true); }
+});
+window.addEventListener('pagehide', () => markSession(false));
 
 function openMenu() {
   if (!getState().menuSeen) { setState({ menuSeen: true }); document.querySelector('.menu-hint')?.remove(); bar.querySelector('.menu-btn')?.classList.remove('new'); }
@@ -129,6 +156,7 @@ function offerResume() {
 }
 
 async function boot() {
+  checkLastSession();
   const s = getState();
   await loadLang(s.lang || detectLang());
   saveProgress();

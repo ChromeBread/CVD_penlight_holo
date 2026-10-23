@@ -1,4 +1,9 @@
 {
+  "p14.crashClear": "清除紀錄",
+  "p14.crashNone": "沒有紀錄。",
+  "p14.crashItem": "{at} 之後，在顯示 Page {page} 時關閉（開啟後 {min} 分鐘以上，v{v}）",
+  "p14.crashesNote": "在顯示本應用程式時瀏覽器突然關閉，會記錄當時開啟的頁面（最多 10 筆，僅儲存在本裝置）。查找原因時請告訴我們這些內容。",
+  "p14.crashes": "突然關閉的紀錄",
   "ed.toCsv": "前往 CSV 編輯器",
   "ed.moreCsv": "想以表格形式細部調整所有欄時，請使用 CSV 編輯器（第 19 頁）。",
   "beta.link": "關於 β 版",

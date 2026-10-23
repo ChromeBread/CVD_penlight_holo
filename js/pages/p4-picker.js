@@ -8,7 +8,19 @@ export default {
   id: 4,
   debug: true,
   render(root) {
-    let img = null, data = null, file = null;
+    // Memory: phones crashed with big photos (48 MP = about 190 MB as pixels). So the image is drawn from a
+    // copy at most MAX px on its long side, colors are read one pixel at a time with a 1x1 canvas instead of
+    // keeping every pixel, and the previous image is let go when a new one is opened or the page is left.
+    const MAX = 3072;
+    let img = null, file = null, url = '', orig = null, iw = 0, ih = 0;
+    const one = document.createElement('canvas');
+    one.width = one.height = 1;
+    const oneCtx = one.getContext('2d', { willReadFrequently: true });
+    function release() {
+      if (img instanceof HTMLCanvasElement) img.width = img.height = 0;
+      if (url) URL.revokeObjectURL(url);
+      img = null; url = '';
+    }
     let scale = 1, ox = 0, oy = 0, picked = null, pickPos = null;
     const canvas = h('canvas', { class: 'p4-canvas' });
     const ctx = canvas.getContext('2d');
@@ -56,8 +68,8 @@ export default {
     function fit() {
       if (!img) return;
       const r = area.getBoundingClientRect();
-      scale = Math.min(r.width / img.naturalWidth, r.height / img.naturalHeight);
-      ox = (r.width - img.naturalWidth * scale) / 2; oy = (r.height - img.naturalHeight * scale) / 2;
+      scale = Math.min(r.width / iw, r.height / ih);
+      ox = (r.width - iw * scale) / 2; oy = (r.height - ih * scale) / 2;
       draw();
     }
 
@@ -71,16 +83,24 @@ export default {
 
     function open(f) {
       if (!f) return;
+      release();
       file = f;
-      const url = URL.createObjectURL(f);
+      url = URL.createObjectURL(f);
       const im = new Image();
       im.onload = () => {
-        img = im;
-        const c = document.createElement('canvas');
-        c.width = im.naturalWidth; c.height = im.naturalHeight;
-        const cx = c.getContext('2d', { willReadFrequently: true });
-        cx.drawImage(im, 0, 0);
-        try { data = cx.getImageData(0, 0, c.width, c.height); } catch { data = null; }
+        orig = { w: im.naturalWidth, h: im.naturalHeight };
+        const k = Math.min(1, MAX / Math.max(orig.w, orig.h));
+        if (k < 1) {
+          // big photo: keep a smaller copy and let the full-size one go
+          const c = document.createElement('canvas');
+          c.width = Math.round(orig.w * k); c.height = Math.round(orig.h * k);
+          const cx = c.getContext('2d');
+          cx.imageSmoothingQuality = 'high';
+          cx.drawImage(im, 0, 0, c.width, c.height);
+          img = c;
+          im.src = ''; URL.revokeObjectURL(url); url = '';
+        } else img = im;
+        iw = img.width; ih = img.height;
         empty.hidden = true; picked = null; pickPos = null;
         fit(); renderSide();
       };
@@ -88,13 +108,18 @@ export default {
     }
 
     function pick(clientX, clientY) {
-      if (!img || !data) return;
+      if (!img) return;
       const r = area.getBoundingClientRect();
       const x = Math.floor((clientX - r.left - ox) / scale), y = Math.floor((clientY - r.top - oy) / scale);
-      if (x < 0 || y < 0 || x >= data.width || y >= data.height) return;
-      const i = (y * data.width + x) * 4;
-      picked = { r: data.data[i], g: data.data[i + 1], b: data.data[i + 2], a: data.data[i + 3] };
-      pickPos = { x, y };
+      if (x < 0 || y < 0 || x >= iw || y >= ih) return;
+      let p;
+      try {
+        oneCtx.clearRect(0, 0, 1, 1);
+        oneCtx.drawImage(img, x, y, 1, 1, 0, 0, 1, 1);
+        p = oneCtx.getImageData(0, 0, 1, 1).data;
+      } catch { return; }
+      picked = { r: p[0], g: p[1], b: p[2], a: p[3] };
+      pickPos = { x, y, ox: Math.floor((x * orig.w) / iw), oy: Math.floor((y * orig.h) / ih) };
       const hex = rgbToHex(picked);
       readout.hidden = false;
       readout.style.background = hex; readout.style.color = textOn(hex);
@@ -110,14 +135,14 @@ export default {
           h('dl', { class: 'kv' },
             h('dt', null, t('p4.name')), h('dd', null, file.name),
             h('dt', null, t('p4.ext')), h('dd', null, `${ext} (${file.type || '?'})`),
-            h('dt', null, t('p4.resolution')), h('dd', null, `${img.naturalWidth} × ${img.naturalHeight}`),
+            h('dt', null, t('p4.resolution')), h('dd', null, `${orig.w} × ${orig.h}`),
             h('dt', null, t('p4.fileSize')), h('dd', null, file.size >= 1048576 ? `${(file.size / 1048576).toFixed(2)} MB` : `${(file.size / 1024).toFixed(1)} KB`)));
       }
       if (picked) {
         const hsl = rgbToHsl(picked), hsv = rgbToHsv(picked), cmyk = rgbToCmyk(picked);
         rows.push(h('h3', null, t('p4.color')),
           h('dl', { class: 'kv' },
-            h('dt', null, t('p4.position')), h('dd', null, `x ${pickPos.x}, y ${pickPos.y}`),
+            h('dt', null, t('p4.position')), h('dd', null, `x ${pickPos.ox}, y ${pickPos.oy}`),
             h('dt', null, 'HEX'), h('dd', null, rgbToHex(picked)),
             h('dt', null, 'RGB'), h('dd', null, `${picked.r}, ${picked.g}, ${picked.b}`),
             h('dt', null, 'HSL'), h('dd', null, `${fmt(hsl.h)}°, ${fmt(hsl.s)}%, ${fmt(hsl.l)}%`),
@@ -141,7 +166,7 @@ export default {
     let pinch = null;
     area.addEventListener('pointerdown', e => {
       if (e.target !== canvas) return;
-      canvas.setPointerCapture(e.pointerId);
+      try { canvas.setPointerCapture(e.pointerId); } catch { /* synthetic or already released */ }
       pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
       if (pts.size === 2) {
         const [a, b] = [...pts.values()];
@@ -171,6 +196,6 @@ export default {
     }, { passive: false });
 
     renderSide();
-    return () => ro.disconnect();
+    return () => { ro.disconnect(); release(); canvas.width = canvas.height = 0; };
   },
 };

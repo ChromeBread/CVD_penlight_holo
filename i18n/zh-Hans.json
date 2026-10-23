@@ -1,4 +1,9 @@
 {
+  "p14.crashClear": "清除记录",
+  "p14.crashNone": "没有记录。",
+  "p14.crashItem": "{at} 之后，在显示 Page {page} 时关闭（打开后 {min} 分钟以上，v{v}）",
+  "p14.crashesNote": "在显示本应用时浏览器突然关闭，会记录当时打开的页面（最多 10 条，仅保存在本设备）。查找原因时请告诉我们这些内容。",
+  "p14.crashes": "突然关闭的记录",
   "ed.toCsv": "前往 CSV 编辑器",
   "ed.moreCsv": "想以表格形式细致调整所有列时，请使用 CSV 编辑器（第 19 页）。",
   "beta.link": "关于 β 版",

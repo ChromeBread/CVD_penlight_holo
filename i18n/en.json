@@ -1,4 +1,9 @@
 {
+  "p14.crashClear": "Clear the record",
+  "p14.crashNone": "Nothing recorded.",
+  "p14.crashItem": "After {at}: closed while showing Page {page} ({min}+ min after opening, v{v})",
+  "p14.crashesNote": "If the browser closes suddenly while this app is on screen, the page that was open is recorded (up to 10, on this device only). When looking for the cause, please share it.",
+  "p14.crashes": "Record of sudden closes",
   "ed.toCsv": "Go to the CSV editor",
   "ed.moreCsv": "To fine-tune every column as a table, use the CSV editor (page 19).",
   "beta.link": "About the beta",

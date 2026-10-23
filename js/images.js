@@ -52,7 +52,7 @@ async function shrink(blob) {
   c.width = Math.max(1, Math.round(bmp.width * k)); c.height = Math.max(1, Math.round(bmp.height * k));
   c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
   bmp.close?.();
-  return new Promise(r => c.toBlob(b => r(b || blob), 'image/webp', 0.85));
+  return new Promise(r => c.toBlob(b => { c.width = c.height = 0; r(b || blob); }, 'image/webp', 0.85));
 }
 
 async function put(rec) {

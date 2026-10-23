@@ -347,7 +347,11 @@ function imageButtons(kind, getArgs) {
     return `cvdph-cycle-${kind === 15 ? 'circle' : 'list'}-${(stage?.stage_id || 'live')}-${(penlight?.id || 'penlight')}.png`.replace(/[^\w.-]+/g, '_');
   };
   const make = () => new Promise((resolve, reject) => {
-    try { chartImage(kind, ...getArgs()).toBlob(b => (b ? resolve(b) : reject(new Error('no image'))), 'image/png'); } catch (e) { reject(e); }
+    try {
+      const c = chartImage(kind, ...getArgs());
+      // free the drawing right away (phones keep canvas memory until it is released)
+      c.toBlob(b => { c.width = c.height = 0; if (b) resolve(b); else reject(new Error('no image')); }, 'image/png');
+    } catch (e) { reject(e); }
   });
   const save = async () => {
     try {
