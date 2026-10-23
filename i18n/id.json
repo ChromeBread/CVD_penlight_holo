@@ -1,4 +1,9 @@
 {
+  "save.first": "Menyimpan untuk offline… {done}/{total} ({size})",
+  "save.update": "Menyimpan versi baru {v}… {done}/{total} ({size})",
+  "save.done": "Tersimpan ({size}). Bisa dipakai tanpa sinyal",
+  "save.updateDone": "Versi baru tersimpan ({size}). Aktif saat aplikasi dibuka lagi",
+  "save.failed": "Gagal menyimpan. Buka lagi aplikasi di tempat yang ada sinyal",
   "p13.size": "Diunduh: {size} ({n} file)",
   "p13.sizeNow": "Tersimpan sekarang: {size} ({n} file)",
   "app.title": "Bantuan Penlight untuk Keragaman Penglihatan Warna ~Edisi hololive~ (sementara)",

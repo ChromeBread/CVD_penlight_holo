@@ -1,4 +1,9 @@
 {
+  "save.first": "Saving for offline use… {done}/{total} ({size})",
+  "save.update": "Saving new version {v}… {done}/{total} ({size})",
+  "save.done": "Saved ({size}). Works without signal now",
+  "save.updateDone": "New version saved ({size}). It starts the next time you open the app",
+  "save.failed": "Could not save. Open the app again where you have signal",
   "p13.size": "Downloaded: {size} ({n} files)",
   "p13.sizeNow": "Saved now: {size} ({n} files)",
   "app.title": "Penlight Helper for Color Vision Diversity ~hololive edition~ (tentative)",

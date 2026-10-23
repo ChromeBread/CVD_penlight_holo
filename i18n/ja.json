@@ -1,4 +1,9 @@
 {
+  "save.first": "オフライン用に保存中… {done}/{total}（{size}）",
+  "save.update": "新しいバージョン {v} を保存中… {done}/{total}（{size}）",
+  "save.done": "保存しました（{size}）。電波がなくても使えます",
+  "save.updateDone": "新しいバージョンを保存しました（{size}）。アプリを開き直すと切り替わります",
+  "save.failed": "保存できませんでした。電波のある場所で開き直してください",
   "p13.size": "ダウンロード量：{size}（{n}ファイル）",
   "p13.sizeNow": "現在の保存量：{size}（{n}ファイル）",
   "app.title": "色覚多様性でもペンライトつかい隊～ホロライブ編～(仮)",

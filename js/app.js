@@ -1,4 +1,4 @@
-import { h, t, APP, LANGS, getState, setState, detectLang, loadLang, currentLang, isDebug, onDebug, pageNo } from './core.js';
+import { h, t, APP, LANGS, getState, setState, detectLang, loadLang, currentLang, isDebug, onDebug, pageNo, formatSize } from './core.js';
 import { loadData } from './data.js';
 import p1 from './pages/p1-main.js';
 import p2 from './pages/p2-guide.js';
@@ -63,9 +63,42 @@ function openMenu() {
   document.body.append(sheet);
 }
 
+// Progress bar while the service worker saves the app for offline use (first visit or update).
+function saveProgress() {
+  if (!('serviceWorker' in navigator)) return;
+  const fill = h('div', { class: 'save-fill' });
+  const label = h('span', { class: 'save-label' });
+  const box = h('div', { class: 'save-bar', role: 'progressbar', 'aria-valuemin': '0', hidden: true }, label, h('div', { class: 'save-track' }, fill));
+  document.body.append(box);
+  let hideTimer = 0;
+  const show = (text, ratio, state = '') => {
+    clearTimeout(hideTimer);
+    box.hidden = false; box.className = `save-bar ${state}`;
+    label.textContent = text;
+    fill.style.transform = `scaleX(${Math.max(0, Math.min(1, ratio))})`;
+    box.setAttribute('aria-valuenow', String(Math.round(ratio * 100)));
+  };
+  navigator.serviceWorker.addEventListener('message', e => {
+    const m = e.data;
+    if (!m || m.source !== 'cvdph-sw') return;
+    const update = !!navigator.serviceWorker.controller;
+    const v = m.version.replace(/^cvdph-/, '');
+    if (m.type === 'progress') {
+      show(t(update ? 'save.update' : 'save.first', { v, done: m.done, total: m.total, size: formatSize(m.bytes) }), m.total ? m.done / m.total : 0);
+    } else if (m.type === 'done') {
+      show(t(update ? 'save.updateDone' : 'save.done', { size: formatSize(m.bytes) }), 1, 'ok');
+      hideTimer = setTimeout(() => { box.hidden = true; }, update ? 6000 : 3000);
+    } else if (m.type === 'failed') {
+      show(t('save.failed'), 1, 'bad');
+      hideTimer = setTimeout(() => { box.hidden = true; }, 8000);
+    }
+  });
+}
+
 async function boot() {
   const s = getState();
   await loadLang(s.lang || detectLang());
+  saveProgress();
   await loadData();
   window.addEventListener('hashchange', render);
   onDebug(() => render());

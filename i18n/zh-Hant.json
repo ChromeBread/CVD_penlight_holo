@@ -1,4 +1,9 @@
 {
+  "save.first": "正在儲存以便離線使用… {done}/{total}（{size}）",
+  "save.update": "正在儲存新版本 {v}… {done}/{total}（{size}）",
+  "save.done": "已儲存（{size}）。沒有訊號也能使用",
+  "save.updateDone": "新版本已儲存（{size}）。重新開啟應用程式後切換",
+  "save.failed": "儲存失敗。請在有訊號的地方重新開啟",
   "p13.size": "下載量：{size}（{n} 個檔案）",
   "p13.sizeNow": "目前儲存量：{size}（{n} 個檔案）",
   "app.title": "色覺多樣也能揮螢光棒應援 ～hololive篇～（暫定）",

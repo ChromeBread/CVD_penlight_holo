@@ -1,6 +1,6 @@
 // Offline support: everything is cached on first visit, so the app works
 // inside the venue without signal. Data CSVs are refreshed when online.
-const VERSION = 'cvdph-0.1.7';
+const VERSION = 'cvdph-0.1.8';
 const FILES = [
   './', 'index.html', 'manifest.webmanifest', 'css/app.css',
   'js/app.js', 'js/core.js', 'js/data.js', 'js/color.js', 'js/penlight.js', 'js/ui.js',
@@ -14,22 +14,45 @@ const FILES = [
 
 // Install: always fetch fresh copies (cache: 'reload'), so a new version never mixes in
 // old files from the browser's HTTP cache, and note when this copy was saved and how big it was.
+// Progress is posted to open pages so they can show a progress bar.
 // No skipWaiting: an open page keeps the version it started with; the new one takes over
 // on the next launch, or right away with "clear cache" on the About page.
-async function cacheSize(c) {
-  let bytes = 0, files = 0;
-  for (const req of await c.keys()) {
-    const r = await c.match(req);
-    if (r) { bytes += (await r.blob()).size; files++; }
-  }
-  return { bytes, files };
+async function tell(msg) {
+  for (const client of await self.clients.matchAll({ includeUncontrolled: true, type: 'window' })) client.postMessage({ source: 'cvdph-sw', version: VERSION, ...msg });
+}
+
+async function saveAll(c) {
+  let done = 0, bytes = 0;
+  const total = FILES.length;
+  await tell({ type: 'progress', done, total, bytes });
+  const queue = [...FILES];
+  const worker = async () => {
+    while (queue.length) {
+      const f = queue.shift();
+      const r = await fetch(new Request(f, { cache: 'reload' }));
+      if (!r.ok) throw new Error(`${f}: ${r.status}`);
+      const blob = await r.clone().blob();
+      await c.put(f, r);
+      done++; bytes += blob.size;
+      await tell({ type: 'progress', done, total, bytes });
+    }
+  };
+  await Promise.all([worker(), worker(), worker(), worker()]);  // 4 at a time
+  return { bytes, files: done };
 }
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(async c => {
-    await c.addAll(FILES.map(f => new Request(f, { cache: 'reload' })));
-    const info = { version: VERSION, savedAt: new Date().toISOString(), ...(await cacheSize(c)) };
-    await c.put('cache-info.json', new Response(JSON.stringify(info), { headers: { 'Content-Type': 'application/json' } }));
+    try {
+      const size = await saveAll(c);
+      const info = { version: VERSION, savedAt: new Date().toISOString(), ...size };
+      await c.put('cache-info.json', new Response(JSON.stringify(info), { headers: { 'Content-Type': 'application/json' } }));
+      await tell({ type: 'done', ...size });
+    } catch (err) {
+      await caches.delete(VERSION);  // never keep a half-saved version
+      await tell({ type: 'failed', error: String(err) });
+      throw err;
+    }
   }));
 });
 

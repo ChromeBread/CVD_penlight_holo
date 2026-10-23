@@ -1,15 +1,11 @@
 // Page 13: please post with the hashtag, debug switch, app info, updates / cache, credits, thanks.
-import { h, t, APP, isDebug, setDebug, currentLang } from '../core.js';
+import { h, t, APP, isDebug, setDebug, currentLang, formatSize } from '../core.js';
 import { DB } from '../data.js';
 import { toggle } from '../ui.js';
 
 const fmtTime = iso => { try { return new Date(iso).toLocaleString(currentLang()); } catch { return iso; } };
 const versionOf = name => name.replace(/^cvdph-/, '');
 
-const fmtSize = bytes => {
-  const mb = bytes >= 1024 * 1024, v = mb ? bytes / 1024 / 1024 : bytes / 1024;
-  return `${new Intl.NumberFormat(currentLang(), { maximumFractionDigits: 1 }).format(v)} ${mb ? 'MB' : 'KB'}`;
-};
 
 // What the service worker saved on this device: when, how big at download, and how big now
 // (data updates and images opened later change the current amount).
@@ -55,8 +51,8 @@ function updateSection() {
     saved.textContent = c ? t('p13.cached', { v: c.version, at: c.savedAt ? fmtTime(c.savedAt) : '—' }) : t('p13.notCached');
     if (!c) return;
     sizes.replaceChildren(...[
-      c.downloaded ? t('p13.size', { size: fmtSize(c.downloaded.bytes), n: c.downloaded.files }) : null,
-      t('p13.sizeNow', { size: fmtSize(c.now.bytes), n: c.now.files }),
+      c.downloaded ? t('p13.size', { size: formatSize(c.downloaded.bytes), n: c.downloaded.files }) : null,
+      t('p13.sizeNow', { size: formatSize(c.now.bytes), n: c.now.files }),
     ].filter(Boolean).flatMap((x, i) => (i ? [h('br'), x] : [x])));
   });
   const check = async () => {

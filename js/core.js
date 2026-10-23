@@ -3,7 +3,7 @@
 export const APP = {
   code: 'CVDp-h',
   title: 'CVDp-h', // release title: TBD
-  version: '0.1.7',
+  version: '0.1.8',
   build: '2026-10-23',
   author: 'BlackDream feat. ChromeBread(Dead Beats)',
   hashtag: '#CVDph',
@@ -165,4 +165,10 @@ export function formatDate(iso) {
   if (!m) return iso || '';
   const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
   try { return new Intl.DateTimeFormat(lang, { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' }).format(d); } catch { return iso; }
+}
+
+// 325 KB / 1.2 MB in the UI language's number format.
+export function formatSize(bytes) {
+  const mb = bytes >= 1024 * 1024, v = mb ? bytes / 1024 / 1024 : bytes / 1024;
+  return `${new Intl.NumberFormat(lang, { maximumFractionDigits: 1 }).format(v)} ${mb ? 'MB' : 'KB'}`;
 }
