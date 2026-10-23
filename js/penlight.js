@@ -71,6 +71,8 @@ export function createPenlightButtons(container, opts = {}) {
       p.setAttribute('aria-label', k === 'hitStriped' ? (opts.labelStriped || 'striped') : (opts.labelPlain || 'plain'));
     }
     g.append(p);
+    // soft glow that lights up for a moment when the button is pressed (visible in screen recordings)
+    if (!isHit) g.append(svg('path', { class: 'pl-flash', d: SEMI, fill: '#ffffff', stroke: '#ffffff', 'stroke-width': '6', 'vector-effect': 'non-scaling-stroke', opacity: '0' }));
     groups[k] = g; paths[k] = p;
   }
   // visuals below, hit areas on top
@@ -114,10 +116,17 @@ export function createPenlightButtons(container, opts = {}) {
   let last = -Infinity, holdTimer = 0, longTimer = 0;
   const clearTimers = () => { clearTimeout(holdTimer); clearTimeout(longTimer); };
 
+  // Pressed: the half lights up gently, then fades out over about 0.4 s. Only opacity changes, which is cheap
+  // to draw; a new press restarts the glow. Uses the Web Animations API so it still shows when
+  // the device asks for reduced motion (CSS transitions are switched off then; a fade is not motion).
+  const glows = {};
   function flash(which) {
-    const g = groups[which === 'hitStriped' ? 'striped' : 'plain'];
-    g.classList.add('pressed');
-    setTimeout(() => g.classList.remove('pressed'), 140);
+    const k = which === 'hitStriped' ? 'striped' : 'plain';
+    const el = groups[k].querySelector('.pl-flash');
+    if (!el) return;
+    glows[k]?.cancel();
+    if (!el.animate) { el.setAttribute('opacity', '0.3'); setTimeout(() => el.setAttribute('opacity', '0'), 200); return; }
+    glows[k] = el.animate([{ opacity: 0.34 }, { opacity: 0.34, offset: 0.2 }, { opacity: 0 }], { duration: 420, easing: 'ease-out' });
   }
   function fire(which) {
     last = performance.now();

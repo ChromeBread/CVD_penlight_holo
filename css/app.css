@@ -167,8 +167,7 @@ input[type=range] { width: 100%; accent-color: var(--accent); min-height: 32px; 
 /* penlight buttons svg */
 .pl-svg { position: absolute; inset: 0; pointer-events: none; overflow: visible; touch-action: none; }
 .pl-svg .pl-hitStriped path, .pl-svg .pl-hitPlain path { pointer-events: all; cursor: pointer; outline: none; }
-.pl-svg .pl-striped, .pl-svg .pl-plain { transition: filter .12s; }
-.pl-svg .pressed { filter: brightness(1.8) drop-shadow(0 0 10px #fff8); }
+.pl-svg .pl-flash { pointer-events: none; }
 .pl-svg.editing { pointer-events: all; }
 .pl-svg.editing .pl-hitStriped path, .pl-svg.editing .pl-hitPlain path { fill: #8fd3ff33; stroke: #8fd3ff; stroke-dasharray: 6 4; stroke-width: 2px; pointer-events: none; }
 .pl-svg.editing .pl-hitPlain path { fill: #ffb3d933; stroke: #ffb3d9; }
