@@ -1,16 +1,30 @@
 // Shared UI pieces used by several pages.
 import { h, t, localized, getState, setState } from './core.js';
-import { DB } from './data.js';
+import { DB, isUserId } from './data.js';
 import { glowBackground, paleHex, simulateHex, textOn } from './color.js';
 
+// Stages grouped by fes ("6th fes. Color Rise Harmony / STAGE1" -> group "6th fes. Color Rise Harmony"),
+// user-made stages last under their own group. A fes with one stage is a plain option.
 export function stageSelect(value, onchange) {
+  const groups = new Map();
+  for (const s of DB.stages) {
+    const name = localized(s, 'stage_name') || s.stage_id;
+    const user = isUserId(s.stage_id);
+    const [fes, stage] = name.split(' / ');
+    const g = user ? `✎ ${t('ed.mine')}` : fes;
+    if (!groups.has(g)) groups.set(g, []);
+    groups.get(g).push({ id: s.stage_id, full: name, short: user || !stage ? name : stage });
+  }
+  const opt = (o, text) => h('option', { value: o.id, selected: o.id === value }, text);
   return h('select', { class: 'select', onchange: e => onchange(e.target.value) },
-    DB.stages.map(s => h('option', { value: s.stage_id, selected: s.stage_id === value }, localized(s, 'stage_name') || s.stage_id)));
+    [...groups].map(([g, list]) => (list.length === 1 && !g.startsWith('✎')
+      ? opt(list[0], list[0].full)
+      : h('optgroup', { label: g }, list.map(o => opt(o, o.short))))));
 }
 
 export function penlightSelect(value, onchange) {
   return h('select', { class: 'select', onchange: e => onchange(e.target.value) },
-    DB.penlights.map(p => h('option', { value: p.id, selected: p.id === value }, p.name || p.id)));
+    DB.penlights.map(p => h('option', { value: p.id, selected: p.id === value }, `${p.user ? '✎ ' : ''}${p.name || p.id}`)));
 }
 
 export function cvTypeSelect(value, onchange, withC = false) {
@@ -29,11 +43,20 @@ export function toggle(label, checked, onchange) {
     h('span', { class: 'toggle-ui' }), h('span', null, label));
 }
 
+// Default stage: the first stage of the newest built-in fes (ids look like "fes7-stage1").
+function newestStage() {
+  const built = DB.stages.filter(x => !isUserId(x.stage_id));
+  const last = built[built.length - 1];
+  if (!last) return DB.stages[0]?.stage_id || null;
+  const fes = last.stage_id.split('-')[0];
+  return built.find(x => x.stage_id.split('-')[0] === fes).stage_id;
+}
+
 // Make sure a stage/penlight is chosen and still exists in the data.
 export function ensureSelection() {
   const s = getState();
   const patch = {};
-  if (!DB.stages.some(x => x.stage_id === s.stageId)) patch.stageId = DB.stages[0]?.stage_id || null;
+  if (!DB.stages.some(x => x.stage_id === s.stageId)) patch.stageId = newestStage();
   if (!DB.penlights.some(x => x.id === s.penlightId)) patch.penlightId = DB.penlights[0]?.id || null;
   if (Object.keys(patch).length) setState(patch);
   return getState();
@@ -42,7 +65,8 @@ export function ensureSelection() {
 export function memberName(m) { return localized(m, 'name'); }
 
 export function slotColorName(slot) {
-  return localized(slot, 'color_name') || t(`pc.${slot.color_key}`);
+  const k = `pc.${slot.color_key}`, v = t(k);
+  return localized(slot, 'color_name') || (v === k ? slot.color_key : v);
 }
 
 // A round "penlight glow" disc.

@@ -184,7 +184,7 @@ export default {
         } },
           h('option', { value: '' }, '—'),
           stageMembers(st.stageId).map(m => h('option', { value: m.member_id, selected: m.member_id === st.oshiMemberId }, `${m.oshi_mark} ${memberName(m)}`)))),
-        field(`${t('p1.lockSize')} (px)`, h('input', { type: 'range', min: '40', max: '120', step: '2', value: st.lockSize,
+        field(`${t('p1.lockSize')} (px)`, h('input', { type: 'range', min: '48', max: '140', step: '2', value: st.lockSize,
           oninput: e => { setState({ lockSize: Number(e.target.value) }); placeLock(); } })),
       ] : [];
       const close = bottomSheet(h('div', { class: 'stack' },

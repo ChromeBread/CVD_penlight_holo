@@ -3,7 +3,7 @@
 export const APP = {
   code: 'CVDp-h',
   title: 'CVDp-h', // release title: TBD
-  version: '0.1.10',
+  version: '0.2.0',
   build: '2026-10-23',
   author: 'BlackDream feat. ChromeBread(Dead Beats)',
   hashtag: '#CVDph',
@@ -49,7 +49,7 @@ const defaults = {
   showHits: false,     // debug only
   hitOpacity: 60,
   lockPos: null,   // page 1 lock button {x, y} as fractions
-  lockSize: 56,    // px, changeable in debug mode
+  lockSize: 72,    // px, changeable in debug mode
   cycleZoom: 100,  // page 15 chart size in %
   overlayOpacity: 45,
   checklist: {},
@@ -58,6 +58,7 @@ let state = { ...defaults };
 try {
   const raw = localStorage.getItem(KEY);
   if (raw) state = { ...defaults, ...JSON.parse(raw) };
+  if (state.lockSize === 56) state.lockSize = 72;  // old default was too small to tap
 } catch { /* private mode etc. */ }
 
 export function getState() { return state; }

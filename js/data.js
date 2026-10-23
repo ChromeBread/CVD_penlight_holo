@@ -34,6 +34,7 @@ async function loadCsv(path) {
 }
 
 export const DB = { members: [], stages: [], penlightColors: [], penlights: [], specs: [], contributors: [] };
+const BASE = { members: [], colors: [] };
 
 export async function loadData() {
   const [members, colors, specs, contributors] = await Promise.all([
@@ -42,10 +43,52 @@ export async function loadData() {
     loadCsv('data/c_penlight_specs.csv'),
     loadCsv('data/contributors.csv'),
   ]);
-  DB.members = members;
-  DB.penlightColors = colors;
+  BASE.members = members;
+  BASE.colors = colors;
   DB.specs = specs;
   DB.contributors = contributors;
+  applyUserData();
+}
+
+// ---------- user data (page 18): kept in this browser only, merged after the built-in tables ----------
+// Built-in rows are never changed; user stages / penlights get ids starting with "user-".
+const USER_KEY = 'cvdph.userdata.v1';
+
+export function getUserData() {
+  try {
+    const d = JSON.parse(localStorage.getItem(USER_KEY) || '{}');
+    return { stages: Array.isArray(d.stages) ? d.stages : [], penlights: Array.isArray(d.penlights) ? d.penlights : [] };
+  } catch { return { stages: [], penlights: [] }; }
+}
+
+export function saveUserData(d) {
+  try { localStorage.setItem(USER_KEY, JSON.stringify(d)); } catch { /* storage full or blocked */ }
+  applyUserData();
+}
+
+export const isUserId = id => String(id || '').startsWith('user-');
+export const newUserId = () => `user-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+
+// User stage -> rows shaped like table a, user penlight -> rows shaped like table b.
+function userRows(d) {
+  const members = d.stages.flatMap(s => s.members.map((m, i) => ({
+    stage_id: s.id, stage_name_en: s.name, stage_name_ja: s.name, date: s.date || '',
+    member_id: `${s.id}-${i}`, name_en: m.name, name_ja: m.name, oshi_mark: m.mark || '',
+    color_key: m.color_key, color_hex: m.hex || '', surprise: m.surprise ? 'yes' : 'no', user: 'yes',
+  })));
+  const colors = d.penlights.flatMap(p => p.colors.map((c, i) => ({
+    penlight_id: p.id, penlight_name: p.name, order: String(i + 1), color_key: c.color_key,
+    color_name_en: c.name, color_name_ja: c.name, color_hex: c.hex || '#888888', user: 'yes',
+  })));
+  return { members, colors };
+}
+
+export function applyUserData() {
+  const u = userRows(getUserData());
+  const members = [...BASE.members, ...u.members];
+  const colors = [...BASE.colors, ...u.colors];
+  DB.members = members;
+  DB.penlightColors = colors;
 
   const stages = new Map();
   for (const m of members) {
@@ -55,13 +98,17 @@ export async function loadData() {
 
   const pl = new Map();
   for (const c of colors) {
-    if (!pl.has(c.penlight_id)) pl.set(c.penlight_id, { id: c.penlight_id, name: c.penlight_name, colors: [] });
+    if (!pl.has(c.penlight_id)) pl.set(c.penlight_id, { id: c.penlight_id, name: c.penlight_name, colors: [], user: c.user === 'yes' });
     pl.get(c.penlight_id).colors.push(c);
   }
   for (const p of pl.values()) p.colors.sort((a, b) => Number(a.order) - Number(b.order));
   DB.penlights = [...pl.values()];
 }
 
+// A color code for a key, from any penlight that has it.
+export function hexForKey(key) {
+  return DB.penlightColors.find(c => c.color_key === key)?.color_hex || '';
+}
 // Surprise guests (surprise = yes) stay hidden unless debug mode turns them on.
 export function stageMembers(stageId) {
   const surprise = isDebug() && getState().showSurprise;

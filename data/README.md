@@ -11,6 +11,8 @@ Lines starting with `#` are ignored.
 
 ## a_fes_members.csv — table a: who uses which color at each stage
 
+Built-in data: hololive 1st–7th fes., 20 stages. Lineups come from each fes page on the unofficial wiki (seesaawiki hololivetv, 出演); colors from its penlight page, table "メンバー-イベント別". Hex codes are the wiki display colors, not official codes, and every row is `verified = no`. Secret / guest performers listed on the fes pages have `surprise = yes`. These rows are maintained by the project owner and are read-only in the app; fans can copy them into their own data on page 18.
+
 One row = one member at one stage (a live, a day, or a block — anything you want to choose separately).
 
 | column | required | meaning |

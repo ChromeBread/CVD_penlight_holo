@@ -2,7 +2,7 @@
 import { h, t, getState, setState, pageNo } from '../core.js';
 
 const CHECKS = ['airplane', 'power', 'volume', 'alarm', 'brightness', 'streetpass', 'charge', 'offline'];
-const GUIDE_PAGES = [1, 3, 4, 5, 13, 15, 16];
+const GUIDE_PAGES = [1, 3, 4, 5, 13, 15, 16, 17, 18];
 const DEBUG_PAGES = [6, 7, 8, 9, 10, 11, 12, 14];
 
 export default {

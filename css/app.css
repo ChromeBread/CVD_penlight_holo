@@ -21,7 +21,7 @@
 [hidden] { display: none !important; }
 html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); overscroll-behavior: none; }
 body { -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; }
-button, input, select { font: inherit; color: inherit; }
+button, input, select, textarea { font: inherit; color: inherit; }
 h2 { font-size: 1.15rem; margin: 1rem 0 .25rem; }
 h3 { font-size: 1rem; margin: .75rem 0 .25rem; color: var(--muted); }
 
@@ -361,3 +361,28 @@ input[type=range]:focus-visible { outline: 2px solid var(--accent); outline-offs
 .p5-feedback.best strong, .p5-feedback.ok strong { color: #a6f0b0; }
 .p5-feedback.wrong { border-color: #ffd27a; }
 .p5-feedback.wrong strong { color: #ffe6a8; }
+
+/* page 7 thanks / page 8 sorry: short messages, shown extra large */
+body[data-page="7"] .msg-main, body[data-page="8"] .msg-main { font-size: clamp(2.4rem, 12vw, 5.5rem); line-height: 1.2; line-break: strict; }
+body[data-page="7"] .msg-sub, body[data-page="8"] .msg-sub { font-size: clamp(1.2rem, 6vw, 2.2rem); }
+
+/* page 17-18 live data */
+.ld-item { border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; background: var(--panel); }
+.ld-item summary { cursor: pointer; }
+.ld-item summary small { color: var(--muted); }
+.ld-body { margin-top: 8px; display: grid; gap: 8px; }
+.ld-chip { display: inline-block; padding: 2px 8px; border-radius: 8px; font-size: .8rem; font-weight: 700; }
+.ld-order { margin: 0; padding-left: 1.6em; display: grid; gap: 4px; }
+.ld-src a { color: var(--accent); margin-right: .5em; }
+.ed-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.ed-list li { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; background: var(--panel); }
+.ed-list small { color: var(--muted); }
+.ed-text { width: 100%; padding: 8px 12px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .8rem; }
+.ed-table { min-width: 600px; }  /* scrolls sideways on phones instead of squeezing the inputs */
+.ed-table td { padding: 4px; vertical-align: middle; }
+.ed-table th { font-size: .75rem; white-space: nowrap; }
+.ed-table .input { min-width: 0; width: 100%; padding: 6px 8px; }
+.ed-table .ed-mark { width: 3.2em; }
+.ed-color { width: 44px; height: 36px; padding: 0; border: 1px solid var(--line); border-radius: 8px; background: none; }
+.ed-tools { white-space: nowrap; }
+.ed-tools .icon-btn { width: 32px; height: 32px; }

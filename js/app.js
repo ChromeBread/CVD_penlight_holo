@@ -11,8 +11,9 @@ import p12 from './pages/p12-test.js';
 import p13 from './pages/p13-about.js';
 import p14 from './pages/p14-debug.js';
 import { p15, p16 } from './pages/p15-16-cycle.js';
+import { p17, p18 } from './pages/p17-18-livedata.js';
 
-const PAGES = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16];
+const PAGES = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18];
 
 const view = document.getElementById('view');
 const bar = document.getElementById('bar');
