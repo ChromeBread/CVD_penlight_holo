@@ -1,4 +1,6 @@
 {
+  "p13.size": "下载量：{size}（{n} 个文件）",
+  "p13.sizeNow": "当前保存量：{size}（{n} 个文件）",
   "app.title": "色觉多样也能挥荧光棒应援 ～hololive篇～（暂定）",
   "nav.page": "Page {n}",
   "p13.update": "应用更新",

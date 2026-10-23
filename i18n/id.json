@@ -1,4 +1,6 @@
 {
+  "p13.size": "Diunduh: {size} ({n} file)",
+  "p13.sizeNow": "Tersimpan sekarang: {size} ({n} file)",
   "app.title": "Bantuan Penlight untuk Keragaman Penglihatan Warna ~Edisi hololive~ (sementara)",
   "nav.page": "Page {n}",
   "p13.update": "Pembaruan aplikasi",

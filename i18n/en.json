@@ -1,4 +1,6 @@
 {
+  "p13.size": "Downloaded: {size} ({n} files)",
+  "p13.sizeNow": "Saved now: {size} ({n} files)",
   "app.title": "Penlight Helper for Color Vision Diversity ~hololive edition~ (tentative)",
   "nav.page": "Page {n}",
   "p13.update": "App updates",

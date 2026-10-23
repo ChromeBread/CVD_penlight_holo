@@ -1,4 +1,6 @@
 {
+  "p13.size": "下載量：{size}（{n} 個檔案）",
+  "p13.sizeNow": "目前儲存量：{size}（{n} 個檔案）",
   "app.title": "色覺多樣也能揮螢光棒應援 ～hololive篇～（暫定）",
   "nav.page": "Page {n}",
   "p13.update": "應用程式更新",

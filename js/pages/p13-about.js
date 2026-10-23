@@ -6,14 +6,27 @@ import { toggle } from '../ui.js';
 const fmtTime = iso => { try { return new Date(iso).toLocaleString(currentLang()); } catch { return iso; } };
 const versionOf = name => name.replace(/^cvdph-/, '');
 
-// What the service worker saved on this device, and when.
+const fmtSize = bytes => {
+  const mb = bytes >= 1024 * 1024, v = mb ? bytes / 1024 / 1024 : bytes / 1024;
+  return `${new Intl.NumberFormat(currentLang(), { maximumFractionDigits: 1 }).format(v)} ${mb ? 'MB' : 'KB'}`;
+};
+
+// What the service worker saved on this device: when, how big at download, and how big now
+// (data updates and images opened later change the current amount).
 async function cachedInfo() {
   try {
     const name = (await caches.keys()).find(k => k.startsWith('cvdph-'));
     if (!name) return null;
-    const r = await (await caches.open(name)).match('cache-info.json');
+    const c = await caches.open(name);
+    const r = await c.match('cache-info.json');
     const info = r ? await r.json() : {};
-    return { version: versionOf(name), savedAt: info.savedAt };
+    let bytes = 0, files = 0;
+    for (const req of await c.keys()) {
+      if (req.url.endsWith('/cache-info.json')) continue;
+      const res = await c.match(req);
+      if (res) { bytes += (await res.blob()).size; files++; }
+    }
+    return { version: versionOf(name), savedAt: info.savedAt, downloaded: info.bytes != null ? { bytes: info.bytes, files: info.files } : null, now: { bytes, files } };
   } catch { return null; }
 }
 
@@ -36,8 +49,16 @@ async function clearCache() {
 
 function updateSection() {
   const saved = h('p', null, '…');
+  const sizes = h('p', { class: 'fine' });
   const status = h('p', { class: 'fine', 'aria-live': 'polite' });
-  cachedInfo().then(c => { saved.textContent = c ? t('p13.cached', { v: c.version, at: c.savedAt ? fmtTime(c.savedAt) : '—' }) : t('p13.notCached'); });
+  cachedInfo().then(c => {
+    saved.textContent = c ? t('p13.cached', { v: c.version, at: c.savedAt ? fmtTime(c.savedAt) : '—' }) : t('p13.notCached');
+    if (!c) return;
+    sizes.replaceChildren(...[
+      c.downloaded ? t('p13.size', { size: fmtSize(c.downloaded.bytes), n: c.downloaded.files }) : null,
+      t('p13.sizeNow', { size: fmtSize(c.now.bytes), n: c.now.files }),
+    ].filter(Boolean).flatMap((x, i) => (i ? [h('br'), x] : [x])));
+  });
   const check = async () => {
     status.textContent = '…';
     try {
@@ -48,7 +69,7 @@ function updateSection() {
   };
   return h('div', { class: 'card stack' },
     h('h2', null, t('p13.update')),
-    saved,
+    saved, sizes,
     h('div', { class: 'row' }, h('button', { class: 'btn ghost', onclick: check }, '🔄 ' + t('p13.check'))),
     status,
     h('button', { class: 'btn', onclick: clearCache }, '🧹 ' + t('p13.clear')),

@@ -1,6 +1,6 @@
 // Offline support: everything is cached on first visit, so the app works
 // inside the venue without signal. Data CSVs are refreshed when online.
-const VERSION = 'cvdph-0.1.6';
+const VERSION = 'cvdph-0.1.7';
 const FILES = [
   './', 'index.html', 'manifest.webmanifest', 'css/app.css',
   'js/app.js', 'js/core.js', 'js/data.js', 'js/color.js', 'js/penlight.js', 'js/ui.js',
@@ -13,14 +13,24 @@ const FILES = [
 ];
 
 // Install: always fetch fresh copies (cache: 'reload'), so a new version never mixes in
-// old files from the browser's HTTP cache, and note when this copy was saved.
+// old files from the browser's HTTP cache, and note when this copy was saved and how big it was.
 // No skipWaiting: an open page keeps the version it started with; the new one takes over
 // on the next launch, or right away with "clear cache" on the About page.
+async function cacheSize(c) {
+  let bytes = 0, files = 0;
+  for (const req of await c.keys()) {
+    const r = await c.match(req);
+    if (r) { bytes += (await r.blob()).size; files++; }
+  }
+  return { bytes, files };
+}
+
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(VERSION).then(c => Promise.all([
-    c.addAll(FILES.map(f => new Request(f, { cache: 'reload' }))),
-    c.put('cache-info.json', new Response(JSON.stringify({ version: VERSION, savedAt: new Date().toISOString() }), { headers: { 'Content-Type': 'application/json' } })),
-  ])));
+  e.waitUntil(caches.open(VERSION).then(async c => {
+    await c.addAll(FILES.map(f => new Request(f, { cache: 'reload' })));
+    const info = { version: VERSION, savedAt: new Date().toISOString(), ...(await cacheSize(c)) };
+    await c.put('cache-info.json', new Response(JSON.stringify(info), { headers: { 'Content-Type': 'application/json' } }));
+  }));
 });
 
 self.addEventListener('activate', e => {
