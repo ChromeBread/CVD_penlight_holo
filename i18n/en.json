@@ -318,7 +318,7 @@
   "p2.check.volume": "Set volume to zero / silent mode",
   "p2.check.alarm": "Turned off alarms and timers",
   "p2.check.brightness": "Lowered screen brightness (so it does not dazzle others)",
-  "p2.check.streetpass": "Turned on pass-by communication features",
+  "p2.check.streetpass": "Turned on StreetPass on the dual-screen handheld game console",
   "p2.check.charge": "Charged up in case a photo-OK part starts suddenly",
   "p2.check.offline": "Checked for updates in “About this app” so it works offline",
   "p2.resetChecks": "Reset checklist",

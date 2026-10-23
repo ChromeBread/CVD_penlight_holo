@@ -318,7 +318,7 @@
   "p2.check.volume": "已将音量调为零 / 静音模式",
   "p2.check.alarm": "已关闭闹钟和计时器",
   "p2.check.brightness": "已调低屏幕亮度（避免晃到他人）",
-  "p2.check.streetpass": "已开启擦肩通信功能",
+  "p2.check.streetpass": "已开启双屏掌上游戏机的擦肩通信（StreetPass）功能",
   "p2.check.charge": "已充电，以防突然开放拍摄",
   "p2.check.offline": "已在「关于本应用」中检查更新，可以离线使用",
   "p2.resetChecks": "重置检查项",
