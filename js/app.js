@@ -1,4 +1,4 @@
-import { h, t, APP, LANGS, getState, setState, detectLang, loadLang, currentLang, isDebug, onDebug } from './core.js';
+import { h, t, APP, LANGS, getState, setState, detectLang, loadLang, currentLang, isDebug, onDebug, pageNo } from './core.js';
 import { loadData } from './data.js';
 import p1 from './pages/p1-main.js';
 import p2 from './pages/p2-guide.js';
@@ -14,8 +14,6 @@ import { p15, p16 } from './pages/p15-16-cycle.js';
 
 const PAGES = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16];
 
-// Shown page number. Page 11 shows the local emergency number (119, 999, 120 ...).
-const pageNo = p => { const k = `page.${p.id}.no`, v = t(k); return v === k ? String(p.id) : v; };
 const view = document.getElementById('view');
 const bar = document.getElementById('bar');
 let cleanup = null;

@@ -77,23 +77,36 @@ export function createPenlightButtons(container, opts = {}) {
   root.append(groups.striped, groups.plain, groups.hitStriped, groups.hitPlain);
   container.append(root);
 
-  function render() {
+  // Size is measured only on resize; drawing is batched to one frame and, while dragging,
+  // only the moved part is redrawn, so editing stays light on phones and slow PCs.
+  function measure() {
     const rect = container.getBoundingClientRect();
     W = rect.width || 1; H = rect.height || 1;
     root.setAttribute('viewBox', `0 0 ${W} ${H}`);
     root.setAttribute('width', W); root.setAttribute('height', H);
-    const m = Math.min(W, H);
-    for (const k of KEYS) {
-      const it = clampItem(layout[k], W, H);
-      const R = (it.d * m) / 2;
-      groups[k].setAttribute('transform', `translate(${it.x * W} ${it.y * H}) rotate(${it.r}) scale(${R})`);
-      if (k.startsWith('hit')) paths[k].setAttribute('d', it.shape === 'rect' ? RECT : SEMI);
-    }
+  }
+  function drawItem(k) {
+    const it = clampItem(layout[k], W, H);
+    const R = (it.d * Math.min(W, H)) / 2;
+    groups[k].setAttribute('transform', `translate(${it.x * W} ${it.y * H}) rotate(${it.r}) scale(${R})`);
+    if (k.startsWith('hit')) paths[k].setAttribute('d', it.shape === 'rect' ? RECT : SEMI);
+  }
+  function render() {
+    for (const k of KEYS) drawItem(k);
     root.classList.toggle('editing', edit);
     for (const k of KEYS) groups[k].classList.toggle('selected', edit && k === selected);
   }
+  let frame = 0, onlySelected = false;
+  function schedule(selectedOnly = false) {
+    if (frame) { onlySelected = onlySelected && selectedOnly; return; }
+    onlySelected = selectedOnly;
+    frame = requestAnimationFrame(() => { frame = 0; if (onlySelected) drawItem(selected); else render(); });
+  }
+  // save after the user pauses, not on every move
+  let saveTimer = 0;
+  const saveSoon = () => { clearTimeout(saveTimer); saveTimer = setTimeout(() => { saveTimer = 0; opts.onChange?.(layout); }, 250); };
 
-  const ro = new ResizeObserver(() => requestAnimationFrame(render));
+  const ro = new ResizeObserver(() => { measure(); schedule(); });
   ro.observe(container);
 
   // ---------- press handling with mis-tap guards ----------
@@ -154,7 +167,7 @@ export function createPenlightButtons(container, opts = {}) {
   root.addEventListener('pointerdown', e => {
     if (!edit) return;
     e.preventDefault();
-    root.setPointerCapture?.(e.pointerId);
+    try { root.setPointerCapture(e.pointerId); } catch { /* synthetic or already released */ }
     pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
     snapshot();
   });
@@ -172,8 +185,7 @@ export function createPenlightButtons(container, opts = {}) {
       it.d = start.it.d * (dist / start.dist);
       it.r = Math.round(start.it.r + ((ang - start.ang) * 180) / Math.PI);
     }
-    render();
-    opts.onChange?.(layout);
+    schedule(true);
   });
   const endPt = e => { if (pts.delete(e.pointerId)) { snapshot(); opts.onChange?.(layout); } };
   root.addEventListener('pointerup', endPt);
@@ -184,10 +196,11 @@ export function createPenlightButtons(container, opts = {}) {
     const it = layout[selected];
     if (e.shiftKey) it.r = Math.round(it.r + Math.sign(e.deltaY) * 5);
     else it.d *= e.deltaY > 0 ? 0.95 : 1.05;
-    render();
-    opts.onChange?.(layout);
+    schedule(true);
+    saveSoon();
   }, { passive: false });
 
+  measure();
   render();
 
   return {
@@ -196,9 +209,11 @@ export function createPenlightButtons(container, opts = {}) {
     setEdit(on) { edit = !!on; render(); },
     select(k) { selected = k; render(); },
     get selected() { return selected; },
-    update(patch) { Object.assign(layout[selected], patch); render(); opts.onChange?.(layout); },
+    update(patch) { clampItem(Object.assign(layout[selected], patch), W, H); schedule(true); saveSoon(); },
     render,
     destroy() {
+      cancelAnimationFrame(frame);
+      if (saveTimer) { clearTimeout(saveTimer); opts.onChange?.(layout); }
       ro.disconnect();
       window.removeEventListener('pointerup', onUp);
       window.removeEventListener('pointercancel', onUp);

@@ -3,7 +3,7 @@
 export const APP = {
   code: 'CVDp-h',
   title: 'CVDp-h', // release title: TBD
-  version: '0.1.3',
+  version: '0.1.4',
   build: '2026-10-23',
   author: 'BlackDream feat. ChromeBread(Dead Beats)',
   hashtag: '#CVDph',
@@ -36,7 +36,7 @@ const defaults = {
   penlightId: null,
   index: 0,
   cvType: 'D',
-  guard: 'cooldown', // off | cooldown | hold
+  guard: 'off', // off | cooldown | hold
   wakeLock: true,
   swapDirection: false,
   layout: null,
@@ -48,6 +48,9 @@ const defaults = {
   showSurprise: false, // debug only
   showHits: false,     // debug only
   hitOpacity: 60,
+  lockPos: null,   // page 1 lock button {x, y} as fractions
+  lockSize: 56,    // px, changeable in debug mode
+  cycleZoom: 100,  // page 15 chart size in %
   overlayOpacity: 45,
   checklist: {},
 };
@@ -148,4 +151,18 @@ export function toast(msg) {
   document.body.append(el);
   setTimeout(() => el.classList.add('out'), 1800);
   setTimeout(() => el.remove(), 2300);
+}
+
+// Shown page number. Page 11 shows the local emergency number (119, 911, 120 ...).
+export function pageNo(p) {
+  const k = `page.${p.id}.no`, v = t(k);
+  return v === k ? String(p.id) : v;
+}
+
+// "2025年3月8日(土)" / "Sat, March 8, 2025" so day and month can't be mixed up.
+export function formatDate(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');
+  if (!m) return iso || '';
+  const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  try { return new Intl.DateTimeFormat(lang, { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' }).format(d); } catch { return iso; }
 }

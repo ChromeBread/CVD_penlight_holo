@@ -1,6 +1,6 @@
 // Pages 15-16: penlight cycle charts (circle / vertical) for a chosen live and penlight.
 // Limits keep the chart readable with many colors or names: extra colors and names are cut with a note / "+N".
-import { h, t, getState, localized } from '../core.js';
+import { h, t, getState, setState, localized, formatDate } from '../core.js';
 import { buildSlots, DB } from '../data.js';
 import { paleHex, textOn } from '../color.js';
 import { stageSelect, penlightSelect, field, ensureSelection, memberName, slotColorName } from '../ui.js';
@@ -32,12 +32,32 @@ function fit(text, maxEm) {
 
 const label = m => `${m.oshi_mark} ${memberName(m)}`.trim();
 
-function directions() {
+const NEXT_COLOR = '#ff7a90', PREV_COLOR = '#6aa8ff';
+
+// Half-circle icon like the page 1 buttons, tinted with the direction color.
+let iconId = 0;
+function halfIcon(striped, color, name) {
+  const root = svg('svg', { class: 'cy-half', viewBox: '-1.1 -1.1 1.3 2.2', role: 'img', 'aria-label': name });
+  let fill = color;
+  if (striped) {
+    const id = `cy-stripe-${++iconId}`;
+    const pat = svg('pattern', { id, width: '0.5', height: '0.5', patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(35)' });
+    pat.append(svg('rect', { width: '0.5', height: '0.5', fill: color }), svg('rect', { width: '0.22', height: '0.5', fill: '#1b1d24' }));
+    const defs = svg('defs'); defs.append(pat); root.append(defs);
+    fill = `url(#${id})`;
+  }
+  root.append(svg('path', { d: 'M0,-1 A1,1 0 0 0 0,1 Z', fill, stroke: color, 'stroke-width': '0.12' }));
+  return root;
+}
+
+// Which half-circle goes forward, as on page 1 (the swap setting flips it).
+function legend() {
   const swap = getState().swapDirection;
-  return {
-    next: t('cycle.next', { btn: t(swap ? 'p1.btnPlain' : 'p1.btnStriped') }),
-    prev: t('cycle.prev', { btn: t(swap ? 'p1.btnStriped' : 'p1.btnPlain') }),
-  };
+  const item = (cls, striped, color, text) => h('span', { class: cls },
+    halfIcon(striped, color, t(striped ? 'p1.btnStriped' : 'p1.btnPlain')), text);
+  return h('div', { class: 'cy-legend' },
+    item('cy-next', !swap, NEXT_COLOR, t('cycle.next')),
+    item('cy-prev', swap, PREV_COLOR, t('cycle.prev')));
 }
 
 // ---------- circle ----------
@@ -56,14 +76,14 @@ function ring(slots) {
     g.append(svg('path', { d: `M${s[0]},${s[1]} A${r},${r} 0 1 ${cw ? 1 : 0} ${e[0]},${e[1]}`, fill: 'none', stroke: color, 'stroke-width': 7, 'marker-end': `url(#cy-arrow-${cw ? 'n' : 'p'})` }));
   };
   const defs = svg('defs');
-  for (const [id, color] of [['n', '#ff7a90'], ['p', '#6aa8ff']]) {
+  for (const [id, color] of [['n', NEXT_COLOR], ['p', PREV_COLOR]]) {
     const m = svg('marker', { id: `cy-arrow-${id}`, viewBox: '0 0 10 10', refX: 5, refY: 5, markerWidth: 4, markerHeight: 4, orient: 'auto-start-reverse' });
     m.append(svg('path', { d: 'M0,0 L10,5 L0,10 Z', fill: color }));
     defs.append(m);
   }
   g.append(defs);
-  arc(R * 0.72, true, '#ff7a90');
-  arc(R * 0.5, false, '#6aa8ff');
+  arc(R * 0.72, true, NEXT_COLOR);
+  arc(R * 0.5, false, PREV_COLOR);
 
   // labels: centered above / below for the top and bottom slots, two relaxed columns for the rest
   const items = slots.map((sl, i) => {
@@ -132,12 +152,15 @@ function column(slots) {
     })));
 }
 
-// Small screens: the circle can be zoomed and scrolled sideways.
+// The circle size is set with a slider (100-300 %); wider than the screen scrolls sideways.
 function zoomable(el) {
-  const wrap = h('div', { class: 'cy-zoom' }, el);
-  const btn = h('button', { class: 'icon-btn cy-zoom-btn', 'aria-pressed': 'false', 'aria-label': '🔍',
-    onclick: () => { const on = wrap.classList.toggle('on'); btn.setAttribute('aria-pressed', String(on)); btn.textContent = on ? '🔍−' : '🔍＋'; } }, '🔍＋');
-  return h('div', { class: 'cy-zoom-box' }, btn, wrap);
+  const box = h('div', { class: 'cy-zoom' }, el);
+  const apply = v => { el.style.width = `${v}%`; out.textContent = `${v}%`; };
+  const out = h('output', { class: 'cy-zoom-val' });
+  const range = h('input', { type: 'range', min: '100', max: '300', step: '5', value: getState().cycleZoom, 'aria-label': t('cycle.zoom'),
+    oninput: e => apply(Number(e.target.value)), onchange: e => setState({ cycleZoom: Number(e.target.value) }) });
+  apply(getState().cycleZoom);
+  return h('div', { class: 'stack' }, h('label', { class: 'cy-zoom-row' }, h('span', null, '🔍 ' + t('cycle.zoom')), range, out), box);
 }
 
 function cyclePage(id, draw) {
@@ -151,15 +174,13 @@ function cyclePage(id, draw) {
         const all = buildSlots(stageId, penlightId);
         const slots = all.slice(0, MAX_COLORS);
         const st = DB.stages.find(x => x.stage_id === stageId);
-        const dir = directions();
         const body = !slots.length ? h('p', { class: 'empty' }, t('p1.noData'))
           : id === 15 ? zoomable(draw(slots)) : draw(slots);
         chart.replaceChildren(...[
-          st ? h('p', { class: 'cy-title' }, h('strong', null, localized(st, 'stage_name') || st.stage_id), st.date ? h('span', null, st.date) : null) : null,
-          h('div', { class: 'cy-legend' }, h('span', { class: 'cy-next' }, (id === 15 ? '↻ ' : '↓ ') + dir.next), h('span', { class: 'cy-prev' }, (id === 15 ? '↺ ' : '↑ ') + dir.prev)),
+          st ? h('p', { class: 'cy-title' }, h('strong', null, localized(st, 'stage_name') || st.stage_id), st.date ? h('span', null, formatDate(st.date)) : null) : null,
+          legend(),
           all.length > MAX_COLORS ? h('p', { class: 'warn' }, t('cycle.limit', { n: MAX_COLORS })) : null,
           body,
-          h('p', { class: 'fine center' }, '↻ ' + t('cycle.loop')),
         ].filter(Boolean));
       };
       root.append(h('div', { class: 'page stack' },

@@ -2,13 +2,20 @@
 import { h, t } from '../core.js';
 import { messageCard } from '../ui.js';
 
+// With a caution, the page opens on a note for the app user only;
+// the card for the other person comes next, and both can be switched back and forth.
 const card = (id, tone, caution = false) => ({
   id,
   debug: true,
   render(root) {
-    root.append(h('div', { class: 'page full' },
-      caution ? h('p', { class: 'card-caution' }, '⚠ ' + t('cards.caution')) : null,
-      messageCard(t(`p${id}.lines`), { tone })));
+    const lines = caution ? [...t(`p${id}.lines`), t('cards.gentle')] : t(`p${id}.lines`);
+    const showCard = () => root.replaceChildren(h('div', { class: 'page full' },
+      messageCard(lines, { tone }),
+      caution ? h('button', { class: 'btn ghost', onclick: showNote }, t('cards.toNote')) : null));
+    const showNote = () => root.replaceChildren(h('div', { class: 'page stack' },
+      h('p', { class: 'card-caution' }, '⚠ ' + t('cards.caution')),
+      h('button', { class: 'btn big', onclick: showCard }, t('cards.toCard'))));
+    (caution ? showNote : showCard)();
   },
 });
 

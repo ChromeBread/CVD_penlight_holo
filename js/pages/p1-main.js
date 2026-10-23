@@ -115,19 +115,55 @@ export default {
       oshiBtn.style.boxShadow = saved ? `0 0 0 3px ${paleHex(saved.hex)}` : '';
     }
 
-    // ---------- top bar actions: lock + settings ----------
-    const actions = document.getElementById('bar-actions');
-    const lockBtn = h('button', { class: 'icon-btn', 'aria-label': t('p1.lock') }, '🔓');
+    // ---------- movable lock button: tap toggles, drag moves ----------
+    const lockBtn = h('button', { class: 'lock-fab', 'aria-label': t('p1.lock') }, '🔓');
+    wrap.append(lockBtn);
     const setLock = on => {
       locked = on; lockBtn.textContent = on ? '🔒' : '🔓';
       lockBanner.hidden = !on; wrap.classList.toggle('locked', on);
     };
-    // one press locks, the next press unlocks
+    function placeLock(pos = getState().lockPos || { x: 0.9, y: 0.64 }) {
+      const size = getState().lockSize;
+      const W = wrap.clientWidth || 1, H = wrap.clientHeight || 1;
+      const x = Math.max(0, Math.min(W - size, pos.x * W - size / 2));
+      const y = Math.max(0, Math.min(H - size, pos.y * H - size / 2));
+      Object.assign(lockBtn.style, { width: `${size}px`, height: `${size}px`, fontSize: `${Math.round(size * 0.5)}px`, transform: `translate(${x}px, ${y}px)` });
+    }
+    let drag = null, moved = false, lockFrame = 0;
+    lockBtn.addEventListener('pointerdown', e => {
+      e.stopPropagation();
+      try { lockBtn.setPointerCapture(e.pointerId); } catch { /* synthetic or already released */ }
+      drag = { id: e.pointerId, x: e.clientX, y: e.clientY };
+      moved = false;
+    });
+    lockBtn.addEventListener('pointermove', e => {
+      if (!drag || e.pointerId !== drag.id) return;
+      if (!moved && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 10) return;
+      moved = true;
+      const r = wrap.getBoundingClientRect();
+      drag.pos = { x: (e.clientX - r.left) / (r.width || 1), y: (e.clientY - r.top) / (r.height || 1) };
+      // draw at most once per frame; saved on release
+      if (!lockFrame) lockFrame = requestAnimationFrame(() => { lockFrame = 0; if (drag?.pos) placeLock(drag.pos); });
+    });
+    const endDrag = () => {
+      cancelAnimationFrame(lockFrame); lockFrame = 0;
+      if (drag?.pos) { setState({ lockPos: drag.pos }); placeLock(); }
+      drag = null;
+    };
+    lockBtn.addEventListener('pointerup', endDrag);
+    lockBtn.addEventListener('pointercancel', endDrag);
     lockBtn.addEventListener('click', () => {
+      if (moved) { moved = false; return; }
       setLock(!locked);
       if (!locked) toast(t('p1.unlocked'));
     });
-    actions.append(lockBtn, h('button', { class: 'icon-btn', 'aria-label': t('p1.settings'), onclick: openSettings }, '⚙'));
+    const lockRo = new ResizeObserver(() => placeLock());
+    lockRo.observe(wrap);
+    placeLock();
+
+    // ---------- top bar action: settings ----------
+    const actions = document.getElementById('bar-actions');
+    actions.append(h('button', { class: 'icon-btn', 'aria-label': t('p1.settings'), onclick: openSettings }, '⚙'));
 
     function reload() {
       s = getState();
@@ -148,6 +184,8 @@ export default {
         } },
           h('option', { value: '' }, '—'),
           stageMembers(st.stageId).map(m => h('option', { value: m.member_id, selected: m.member_id === st.oshiMemberId }, `${m.oshi_mark} ${memberName(m)}`)))),
+        field(`${t('p1.lockSize')} (px)`, h('input', { type: 'range', min: '40', max: '120', step: '2', value: st.lockSize,
+          oninput: e => { setState({ lockSize: Number(e.target.value) }); placeLock(); } })),
       ] : [];
       const close = bottomSheet(h('div', { class: 'stack' },
         h('h2', null, t('p1.settings')),
@@ -219,6 +257,7 @@ export default {
     return () => {
       if (editing) endEdit();
       buttons.destroy();
+      lockRo.disconnect();
       keepAwake(false);
       document.removeEventListener('visibilitychange', onVis);
     };
