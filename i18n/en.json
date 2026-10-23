@@ -1,4 +1,6 @@
 {
+  "ed.toCsv": "Go to the CSV editor",
+  "ed.moreCsv": "To fine-tune every column as a table, use the CSV editor (page 19).",
   "beta.link": "About the beta",
   "beta.thanks": "Thank you for testing with us! Share your thoughts with {tag}.",
   "beta.backup": "For data you made yourself, keeping a backup with “Manage your data” (debug mode) is safest.",
@@ -50,10 +52,7 @@
   "csv.builtinNote": "Opens a copy. Save it as a file.",
   "csv.fromBuiltin": "From a built-in table or template",
   "csv.intro": "Edit a CSV file as a table with every column. Built-in data opens as a copy, so the original never changes.",
-  "csv.removeWhere": "To delete (uninstall) it, use “CSV editor” on “About this app”.",
   "csv.openEditor": "Open the CSV editor",
-  "csv.cardInstalled": "The CSV editor is downloaded. It edits every column like a spreadsheet.",
-  "csv.cardIntro": "The CSV editor, which edits every column like a spreadsheet, is an extra download. Get it on “About this app” and open it from here.",
   "csv.loadFail": "Could not open it",
   "csv.toAbout": "Get it on “About this app”",
   "csv.notInstalled": "The CSV editor is not downloaded yet. Get it from “CSV editor” on “About this app”.",

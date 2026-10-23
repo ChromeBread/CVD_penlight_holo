@@ -1,4 +1,6 @@
 {
+  "ed.toCsv": "前往 CSV 編輯器",
+  "ed.moreCsv": "想以表格形式細部調整所有欄時，請使用 CSV 編輯器（第 19 頁）。",
   "beta.link": "關於 β 版",
   "beta.thanks": "感謝你陪我們一起測試！感想請用 {tag} 分享。",
   "beta.backup": "自己製作的資料，建議在除錯模式的「資料管理」中儲存備份。",
@@ -50,10 +52,7 @@
   "csv.builtinNote": "開啟副本。儲存時以檔案儲存。",
   "csv.fromBuiltin": "從內建表格・範本",
   "csv.intro": "可以把 CSV 檔案的所有欄直接以表格編輯。內建資料以副本開啟，原始資料不會改變。",
-  "csv.removeWhere": "刪除（解除安裝）可在「關於本應用程式」的「CSV 編輯器」中進行。",
   "csv.openEditor": "開啟 CSV 編輯器",
-  "csv.cardInstalled": "CSV 編輯器已下載。可以像試算表一樣編輯所有欄。",
-  "csv.cardIntro": "可像試算表一樣編輯所有欄的 CSV 編輯器需額外下載。在「關於本應用程式」中下載後即可從這裡開啟。",
   "csv.loadFail": "無法開啟",
   "csv.toAbout": "在「關於本應用程式」中取得",
   "csv.notInstalled": "尚未下載 CSV 編輯器。請在「關於本應用程式」的「CSV 編輯器」中下載。",

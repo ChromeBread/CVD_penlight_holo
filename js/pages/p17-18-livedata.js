@@ -4,8 +4,6 @@ import { h, t, toast, localized, formatDate, getState, currentLang } from '../co
 import { DB, parseCsv, getUserData, saveUserData, isUserId, newUserId, hexForKey, rowDate, dateParts, OSHI_COLS, getDraft, saveDraft, clearDraft } from '../data.js';
 import { paleHex, textOn } from '../color.js';
 import { memberName, memberLabel, slotColorName, field } from '../ui.js';
-import { addonInfo } from '../addon.js';
-import { goInstall } from './p19-csv.js';
 
 // ---------- shared ----------
 const stageName = s => localized(s, 'stage_name') || s.stage_id;
@@ -149,17 +147,6 @@ export const p18 = {
   render(root, { go }) {
     let tab = 'live';
 
-    // The CSV editor (every column, like a spreadsheet) is an add-on: open it, or get it on the About page.
-    function csvCard() {
-      const body = h('div', { class: 'stack' }, h('p', { class: 'fine' }, '…'));
-      addonInfo().then(info => body.replaceChildren(
-        h('p', { class: 'fine' }, t(info ? 'csv.cardInstalled' : 'csv.cardIntro')),
-        info ? h('button', { class: 'btn', onclick: () => go(19) }, '📊 ' + t('csv.openEditor'))
-          : h('button', { class: 'btn ghost', onclick: () => goInstall(go) }, '⬇ ' + t('csv.toAbout')),
-        h('p', { class: 'fine' }, t('csv.removeWhere'))));
-      return h('div', { class: 'card stack' }, h('h3', null, '📊 ' + t('page.19')), body);
-    }
-
     const save = (fn, msg = t('common.saved')) => { const d = getUserData(); fn(d); saveUserData(d); toast(msg); };
 
     // ---------- autosave: what is being edited goes to the draft 0.4 s after the last change ----------
@@ -207,7 +194,6 @@ export const p18 = {
       const draft = getDraft();
       root.replaceChildren(h('div', { class: 'page stack' },
         h('p', { class: 'fine' }, t('ed.intro')),
-        csvCard(),
         h('p', { class: 'fine' }, '💾 ' + t('ed.autosaveNote')),
         draft?.data ? h('div', { class: 'card stack ed-draft' },
           h('strong', null, t('ed.draftFound', { name: draft.data.name || '—', time: draft.savedAt ? new Date(draft.savedAt).toLocaleString(currentLang()) : '' })),
@@ -237,7 +223,10 @@ export const p18 = {
             save(dd => (live ? dd.stages : dd.penlights).push(...got), t('ed.imported', { n: got.length }));
             list();
           })),
-        items.length ? h('details', null, h('summary', null, t('ed.export')), exportBox(live ? exportStages(items) : exportPenlights(items))) : null));
+        items.length ? h('details', null, h('summary', null, t('ed.export')), exportBox(live ? exportStages(items) : exportPenlights(items))) : null,
+        // every column, like a spreadsheet: that is the CSV editor's job (page 19 explains how to get it)
+        h('p', { class: 'fine ed-more' }, t('ed.moreCsv'), ' ',
+          h('button', { class: 'btn ghost ed-more-btn', onclick: () => go(19) }, '📊 ' + t('ed.toCsv')))));
     }
 
     // read CSV / TXT files (lives or penlights, found from the header), save yours as a file, get a blank template

@@ -1,4 +1,6 @@
 {
+  "ed.toCsv": "Ke editor CSV",
+  "ed.moreCsv": "Untuk mengatur semua kolom secara detail dalam bentuk tabel, gunakan editor CSV (halaman 19).",
   "beta.link": "Tentang beta",
   "beta.thanks": "Terima kasih sudah ikut menguji! Bagikan kesanmu dengan {tag}.",
   "beta.backup": "Untuk data buatanmu sendiri, simpan cadangan lewat “Kelola data” (mode debug) agar aman.",
@@ -50,10 +52,7 @@
   "csv.builtinNote": "Membuka salinan. Simpan sebagai file.",
   "csv.fromBuiltin": "Dari tabel bawaan atau templat",
   "csv.intro": "Edit file CSV sebagai tabel dengan semua kolomnya. Data bawaan dibuka sebagai salinan, jadi aslinya tidak berubah.",
-  "csv.removeWhere": "Untuk menghapus (uninstall), gunakan “Editor CSV” di “Tentang aplikasi”.",
   "csv.openEditor": "Buka editor CSV",
-  "csv.cardInstalled": "Editor CSV sudah diunduh. Semua kolom bisa diedit seperti spreadsheet.",
-  "csv.cardIntro": "Editor CSV, yang mengedit semua kolom seperti spreadsheet, adalah unduhan tambahan. Unduh di “Tentang aplikasi”, lalu buka dari sini.",
   "csv.loadFail": "Tidak bisa dibuka",
   "csv.toAbout": "Ambil di “Tentang aplikasi”",
   "csv.notInstalled": "Editor CSV belum diunduh. Unduh dari “Editor CSV” di “Tentang aplikasi”.",

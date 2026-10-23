@@ -1,4 +1,6 @@
 {
+  "ed.toCsv": "前往 CSV 编辑器",
+  "ed.moreCsv": "想以表格形式细致调整所有列时，请使用 CSV 编辑器（第 19 页）。",
   "beta.link": "关于 β 版",
   "beta.thanks": "感谢你陪我们一起测试！感想请用 {tag} 分享。",
   "beta.backup": "自己制作的数据，建议在调试模式的「数据管理」中保存备份。",
@@ -50,10 +52,7 @@
   "csv.builtinNote": "打开副本。保存时以文件保存。",
   "csv.fromBuiltin": "从内置表格·模板",
   "csv.intro": "可以把 CSV 文件的所有列直接以表格编辑。内置数据以副本打开，原始数据不会改变。",
-  "csv.removeWhere": "删除（卸载）可在「关于本应用」的「CSV 编辑器」中进行。",
   "csv.openEditor": "打开 CSV 编辑器",
-  "csv.cardInstalled": "CSV 编辑器已下载。可以像电子表格一样编辑所有列。",
-  "csv.cardIntro": "可像电子表格一样编辑所有列的 CSV 编辑器需额外下载。在「关于本应用」中下载后即可从这里打开。",
   "csv.loadFail": "无法打开",
   "csv.toAbout": "在「关于本应用」中获取",
   "csv.notInstalled": "尚未下载 CSV 编辑器。请在「关于本应用」的「CSV 编辑器」中下载。",
