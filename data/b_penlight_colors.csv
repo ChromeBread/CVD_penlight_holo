@@ -1,16 +1,13 @@
 penlight_id,penlight_name,order,color_key,color_name_en,color_name_ja,color_hex,note
-sample15,SAMPLE 15-color penlight (unverified),1,white,White,ホワイト,#FFFFFF,sample
-sample15,SAMPLE 15-color penlight (unverified),2,red,Red,レッド,#FF2A2A,sample
-sample15,SAMPLE 15-color penlight (unverified),3,orange,Orange,オレンジ,#FF8A1E,sample
-sample15,SAMPLE 15-color penlight (unverified),4,yellow,Yellow,イエロー,#FFE53B,sample
-sample15,SAMPLE 15-color penlight (unverified),5,lime,Lime,ライム,#B6F23A,sample
-sample15,SAMPLE 15-color penlight (unverified),6,green,Green,グリーン,#22D46A,sample
-sample15,SAMPLE 15-color penlight (unverified),7,emerald,Emerald,エメラルド,#19D3B0,sample
-sample15,SAMPLE 15-color penlight (unverified),8,lightblue,Light Blue,ライトブルー,#5CCBFF,sample
-sample15,SAMPLE 15-color penlight (unverified),9,blue,Blue,ブルー,#2F5BFF,sample
-sample15,SAMPLE 15-color penlight (unverified),10,violet,Violet,バイオレット,#7A4DFF,sample
-sample15,SAMPLE 15-color penlight (unverified),11,purple,Purple,パープル,#B04DFF,sample
-sample15,SAMPLE 15-color penlight (unverified),12,pink,Pink,ピンク,#FF5FB0,sample
-sample15,SAMPLE 15-color penlight (unverified),13,lightpink,Light Pink,ライトピンク,#FFA6D2,sample
-sample15,SAMPLE 15-color penlight (unverified),14,peach,Peach,ピーチ,#FFB38A,sample
-sample15,SAMPLE 15-color penlight (unverified),15,warmwhite,Warm White,ウォームホワイト,#FFE9C7,sample
+fes6-12c,6th fes. 12 colors (order unverified),1,white,White,ホワイト,#FFFFFF,order unverified; hex = wiki display color
+fes6-12c,6th fes. 12 colors (order unverified),2,red,Red,レッド,#FF3333,order unverified; hex = wiki display color
+fes6-12c,6th fes. 12 colors (order unverified),3,orange,Orange,オレンジ,#FF9933,order unverified; hex = wiki display color
+fes6-12c,6th fes. 12 colors (order unverified),4,yellow,Yellow,イエロー,#FFFF33,order unverified; hex = wiki display color
+fes6-12c,6th fes. 12 colors (order unverified),5,lightgreen,Light Green,ライトグリーン,#CCFFCC,order unverified; hex = wiki display color
+fes6-12c,6th fes. 12 colors (order unverified),6,green,Green,グリーン,#339933,order unverified; hex = wiki display color
+fes6-12c,6th fes. 12 colors (order unverified),7,lightblue,Light Blue,ライトブルー,#CCFFFF,order unverified; hex = wiki display color
+fes6-12c,6th fes. 12 colors (order unverified),8,blue,Blue,ブルー,#3333FF,order unverified; hex = wiki display color
+fes6-12c,6th fes. 12 colors (order unverified),9,violet,Violet,バイオレット,#CC99FF,order unverified; hex = wiki display color
+fes6-12c,6th fes. 12 colors (order unverified),10,purple,Purple,パープル,#9933FF,order unverified; hex = wiki display color
+fes6-12c,6th fes. 12 colors (order unverified),11,pink,Pink,ピンク,#FF66FF,order unverified; hex = wiki display color
+fes6-12c,6th fes. 12 colors (order unverified),12,lightpink,Light Pink,ライトピンク,#FFCCFF,order unverified; hex = wiki display color

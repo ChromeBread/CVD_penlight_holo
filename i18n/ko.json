@@ -264,5 +264,5 @@
   "pc.white": "화이트", "pc.red": "레드", "pc.orange": "오렌지", "pc.yellow": "옐로",
   "pc.lime": "라임", "pc.green": "그린", "pc.emerald": "에메랄드", "pc.lightblue": "라이트 블루",
   "pc.blue": "블루", "pc.violet": "바이올렛", "pc.purple": "퍼플", "pc.pink": "핑크",
-  "pc.lightpink": "라이트 핑크", "pc.peach": "피치", "pc.warmwhite": "웜 화이트"
+  "pc.lightpink": "라이트 핑크", "pc.lightgreen": "라이트 그린", "pc.peach": "피치", "pc.warmwhite": "웜 화이트"
 }
