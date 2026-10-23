@@ -1,5 +1,5 @@
 import { h, t, APP, LANGS, getState, setState, setDebug, detectLang, loadLang, currentLang, isDebug, onDebug, pageNo, formatSize } from './core.js';
-import { loadData, getDraft, clearDraft } from './data.js';
+import { loadData, getDraft, clearDraft, getCsvDraft, clearCsvDraft } from './data.js';
 import { loadImages } from './images.js';
 import p1 from './pages/p1-main.js';
 import p2 from './pages/p2-guide.js';
@@ -13,8 +13,9 @@ import p13 from './pages/p13-about.js';
 import p14 from './pages/p14-debug.js';
 import { p15, p16 } from './pages/p15-16-cycle.js';
 import { p17, p18 } from './pages/p17-18-livedata.js';
+import p19 from './pages/p19-csv.js';
 
-const PAGES = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18];
+const PAGES = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19];
 
 const view = document.getElementById('view');
 const bar = document.getElementById('bar');
@@ -94,7 +95,7 @@ function saveProgress() {
   navigator.serviceWorker.addEventListener('message', e => {
     const m = e.data;
     if (!m || m.source !== 'cvdph-sw') return;
-    const update = !!navigator.serviceWorker.controller;
+    const update = !!navigator.serviceWorker.controller && !m.resave;
     const v = m.version.replace(/^cvdph-/, '');
     if (m.type === 'progress') {
       show(t(update ? 'save.update' : 'save.first', { v, done: m.done, total: m.total, size: formatSize(m.bytes) }), m.total ? m.done / m.total : 0);
@@ -111,14 +112,18 @@ function saveProgress() {
 // The live data editor is a debug page and debug mode is off after a restart, so an unfinished edit
 // is offered here: one tap turns debug mode on and opens the editor where it was left.
 function offerResume() {
-  const d = getDraft();
-  if (!d?.data || !getState().resumeEdit) return;
+  if (!getState().resumeEdit) return;
+  // page 18 draft { data }, or the CSV editor (page 19) draft { doc }
+  const e18 = getDraft(), e19 = getCsvDraft();
+  const d = e18?.data ? { name: e18.data.name, savedAt: e18.savedAt, page: 18, drop: clearDraft }
+    : e19?.doc ? { name: e19.doc.name, savedAt: e19.savedAt, page: 19, drop: clearCsvDraft } : null;
+  if (!d) return;
   const box = h('div', { class: 'resume-box', role: 'dialog' },
-    h('p', null, '✎ ' + t('ed.draftFound', { name: d.data.name || '—', time: d.savedAt ? new Date(d.savedAt).toLocaleString(currentLang()) : '' })),
+    h('p', null, '✎ ' + t('ed.draftFound', { name: d.name || '—', time: d.savedAt ? new Date(d.savedAt).toLocaleString(currentLang()) : '' })),
     h('div', { class: 'row' },
-      h('button', { class: 'btn', onclick: () => { box.remove(); setDebug(true); go(18); } }, t('ed.draftResume')),
+      h('button', { class: 'btn', onclick: () => { box.remove(); setDebug(true); go(d.page); } }, t('ed.draftResume')),
       h('button', { class: 'btn ghost', onclick: () => box.remove() }, t('ed.draftLater')),
-      h('button', { class: 'btn ghost', onclick: () => { if (confirm(t('ed.draftDropConfirm'))) { clearDraft(); box.remove(); } } }, t('ed.draftDrop'))));
+      h('button', { class: 'btn ghost', onclick: () => { if (confirm(t('ed.draftDropConfirm'))) { d.drop(); box.remove(); } } }, t('ed.draftDrop'))));
   document.body.append(box);
 }
 
@@ -134,6 +139,12 @@ async function boot() {
   offerResume();
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     navigator.serviceWorker.register('sw.js').catch(() => {});
+    // the offline copy of this version is missing (e.g. after "clear cache"): have it saved again
+    navigator.serviceWorker.ready.then(async reg => {
+      if (reg.installing || reg.waiting) return;   // a new version is being saved anyway
+      // (the cache itself may already be back with a few files, so look for the "fully saved" note)
+      if (!(await caches.match('cache-info.json', { cacheName: `cvdph-${APP.version}` }))) reg.active?.postMessage({ type: 'resave' });
+    }).catch(() => {});
   }
 }
 

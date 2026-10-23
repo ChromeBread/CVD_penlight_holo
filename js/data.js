@@ -1,7 +1,8 @@
 // Loads the fan-editable CSV tables in /data.
 import { getState, isDebug } from './core.js';
 
-export function parseCsv(text) {
+// CSV text -> rows of strings (quotes and line breaks inside quotes handled). Empty lines are dropped.
+export function parseRows(text) {
   text = text.replace(/^﻿/, '');
   const rows = [];
   let row = [], field = '', q = false;
@@ -19,7 +20,12 @@ export function parseCsv(text) {
     } else field += c;
   }
   if (field !== '' || row.length) { row.push(field); rows.push(row); }
-  const clean = rows.filter(r => r.some(v => v.trim() !== '') && !r[0].trim().startsWith('#'));
+  return rows.filter(r => r.some(v => v.trim() !== ''));
+}
+
+// CSV text -> objects keyed by the first line. Lines starting with # are notes.
+export function parseCsv(text) {
+  const clean = parseRows(text).filter(r => !r[0].trim().startsWith('#'));
   if (!clean.length) return [];
   const head = clean[0].map(s => s.trim());
   return clean.slice(1).map(r => Object.fromEntries(head.map((k, i) => [k, (r[i] ?? '').trim()])));
@@ -94,6 +100,16 @@ export function saveDraft(d) {
   try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...d, savedAt: new Date().toISOString() })); } catch { /* storage full or blocked */ }
 }
 export function clearDraft() { try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ } }
+
+// The CSV editor add-on (page 19) keeps its table here the same way: { doc: { name, head, rows }, page, savedAt }
+const CSV_DRAFT_KEY = 'cvdph.csvdraft.v1';
+export function getCsvDraft() {
+  try { return JSON.parse(localStorage.getItem(CSV_DRAFT_KEY) || 'null'); } catch { return null; }
+}
+export function saveCsvDraft(d) {
+  try { localStorage.setItem(CSV_DRAFT_KEY, JSON.stringify({ ...d, savedAt: new Date().toISOString() })); } catch { /* storage full or blocked */ }
+}
+export function clearCsvDraft() { try { localStorage.removeItem(CSV_DRAFT_KEY); } catch { /* ignore */ } }
 
 export const isUserId = id => String(id || '').startsWith('user-');
 export const newUserId = () => `user-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;

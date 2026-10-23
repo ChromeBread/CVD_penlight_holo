@@ -1,0 +1,14 @@
+/* CSV editor add-on (page 19) */
+.csv-wrap { max-height: 60vh; overflow: auto; border: 1px solid var(--line); border-radius: 12px; }
+.csv-table { border-collapse: collapse; font-size: .85rem; }
+.csv-table th, .csv-table td { padding: 2px; border: 1px solid var(--line); white-space: nowrap; vertical-align: middle; }
+.csv-table thead th { position: sticky; top: 0; z-index: 2; background: var(--panel-2); }
+.csv-table .csv-no { position: sticky; left: 0; z-index: 1; background: var(--panel); color: var(--muted); text-align: right; padding: 0 4px; }
+.csv-table thead .csv-no { z-index: 3; }
+.csv-no span { display: inline-block; min-width: 2.2em; }
+.csv-cell { min-height: 34px; padding: 4px 6px; font-size: .85rem; border-radius: 6px; }
+.csv-head { font-weight: 700; }
+.csv-x { min-width: 28px; height: 28px; font-size: .8rem; opacity: .6; }
+.csv-x:hover, .csv-x:focus { opacity: 1; }
+.csv-nav { align-items: center; justify-content: space-between; }
+.csv-page input[type=search] { flex: 1; }

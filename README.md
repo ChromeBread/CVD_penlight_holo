@@ -20,7 +20,7 @@ Made by **BlackDream feat. ChromeBread(Dead Beats)**.
 | 13 About | Hashtag, debug switch, version, update check / clear cache, credits. In debug mode also data management: backup, restore, delete what you added. |
 | 15 Penlight cycle chart (circle) | Pick a live and a penlight: every color in button order around a circle, with the members for each color; size slider. |
 | 16 Penlight cycle chart (vertical) | The same as a vertical list, easy to read on a phone. |
-| 4, 6–12, 14, 17, 18 | Debug mode pages: 4 read colors from a picture; 6 phrase cards; 7 “Thank you!👍”, 8 “Sorry”, 9 Ultra orange🚫🍊✨, 10 Photos🚫📸, 11 “🚑Medical emergency!” (its page number shows the emergency number of the language: 119 / 911 / 120 / 999); 12 test color bars; 14 debug settings (surprise guests, hit-area overlay, image opacity, return to the editor); 17 live data viewer; 18 live data editor (your own live / penlight data, CSV file load / save, autosave). Page 1 in debug mode: Hot Button, lock size, size / position of the display parts, member image overlay. |
+| 4, 6–12, 14, 17, 18, 67 | Debug mode pages: 4 read colors from a picture; 6 phrase cards; 7 “Thank you!👍”, 8 “Sorry”, 9 Ultra orange🚫🍊✨, 10 Photos🚫📸, 11 “🚑Medical emergency!” (its page number shows the emergency number of the language: 119 / 911 / 120 / 999); 12 test color bars; 14 debug settings (surprise guests, hit-area overlay, image opacity, return to the editor); 17 live data viewer; 18 live data editor (your own live / penlight data, CSV file load / save, autosave); 67 (internally page 19) CSV editor, a beta / development test build and an optional add-on downloaded on the About page (every column in a grid, built-in tables open as copies, save as file or add to the app). Page 1 in debug mode: Hot Button, lock size, size / position of the display parts, member image overlay. |
 
 Languages: 日本語 / English / 한국어 / 简体中文 / 繁體中文 / Bahasa Indonesia (auto-detected from the device / browser).
 
@@ -43,6 +43,9 @@ The app is a PWA: open it once while online and it keeps working without signal 
 3. Open `https://<user>.github.io/<repo>/`.
 
 No build step. Everything is plain HTML / CSS / JavaScript modules.
+
+Before each release: raise `VERSION` in `sw.js` and `version` in `js/core.js`, then run
+`powershell -ExecutionPolicy Bypass -File tools/app-size.ps1`. It writes `app-size.json`, the expected download sizes the About page shows for the app and the CSV editor add-on (`addons/`, kept in its own cache and only downloaded when someone asks for it).
 
 ## Run locally
 

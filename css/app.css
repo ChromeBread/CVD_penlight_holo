@@ -418,3 +418,9 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
 .resume-box { position: fixed; left: 12px; right: 12px; bottom: calc(var(--safe-b) + 14px); z-index: 60; background: var(--panel); border: 2px solid var(--accent); border-radius: var(--radius); padding: 12px 14px; box-shadow: 0 8px 30px #0008; }
 .resume-box p { margin: 0 0 8px; }
 .danger-btn { background: var(--danger); border-color: var(--danger); color: #2a0a0a; }
+/* About page: add-on download progress, note after reloading */
+.dl-bar { display: grid; gap: 5px; }
+.ok-note { margin: 0; padding: 8px 12px; border-radius: 10px; background: #1d3324; border: 1px solid #7fd88a; }
+/* page 67 (internally 19): beta / development test build notice */
+.beta-banner { margin: 12px 16px 0; padding: 10px 14px; border-radius: var(--radius); border: 2px dashed #ffd36a; background: #3a3014; color: #ffe9a8; display: grid; gap: 4px; }
+.beta-banner strong { font-size: 1.15rem; letter-spacing: .08em; }

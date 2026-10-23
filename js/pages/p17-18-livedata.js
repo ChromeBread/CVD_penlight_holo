@@ -4,12 +4,14 @@ import { h, t, toast, localized, formatDate, getState, currentLang } from '../co
 import { DB, parseCsv, getUserData, saveUserData, isUserId, newUserId, hexForKey, rowDate, dateParts, OSHI_COLS, getDraft, saveDraft, clearDraft } from '../data.js';
 import { paleHex, textOn } from '../color.js';
 import { memberName, memberLabel, slotColorName, field } from '../ui.js';
+import { addonInfo } from '../addon.js';
+import { goInstall } from './p19-csv.js';
 
 // ---------- shared ----------
 const stageName = s => localized(s, 'stage_name') || s.stage_id;
 const chip = (hex, text) => h('span', { class: 'ld-chip', style: { background: paleHex(hex || '#888888'), color: textOn(paleHex(hex || '#888888')) } }, text);
-const q = v => (/[",\n]/.test(v) ? `"${String(v).replace(/"/g, '""')}"` : String(v ?? ''));
-const csv = (head, rows) => [head.join(','), ...rows.map(r => head.map(k => q(r[k] ?? '')).join(','))].join('\n');
+export const q = v => (/[",\n]/.test(v) ? `"${String(v).replace(/"/g, '""')}"` : String(v ?? ''));
+export const csv = (head, rows) => [head.join(','), ...rows.map(r => head.map(k => q(r[k] ?? '')).join(','))].join('\n');
 
 const HEAD_A = ['stage_id', 'stage_name_en', 'stage_name_ja', 'year', 'month', 'day', 'member_id', 'name_en', 'name_ja', 'oshi_mark', 'color_key', 'color_hex', ...OSHI_COLS, 'surprise'];
 const HEAD_B = ['penlight_id', 'penlight_name', 'order', 'color_key', 'color_name_en', 'color_name_ja', 'color_hex'];
@@ -75,7 +77,7 @@ export const p17 = {
 };
 
 // ---------- page 18: editor ----------
-function importStages(text) {
+export function importStages(text) {
   const rows = parseCsv(text);
   if (!rows.length || !('color_key' in rows[0]) || !Object.keys(rows[0]).some(k => k.startsWith('name'))) return null;
   const groups = new Map();
@@ -88,7 +90,7 @@ function importStages(text) {
   return [...groups.values()].filter(s => s.members.length);
 }
 
-function importPenlights(text) {
+export function importPenlights(text) {
   const rows = parseCsv(text);
   if (!rows.length || !('color_key' in rows[0])) return null;
   const groups = new Map();
@@ -100,27 +102,27 @@ function importPenlights(text) {
   return [...groups.values()].filter(p => p.colors.length).map(p => ({ ...p, colors: p.colors.sort((a, b) => a.order - b.order).map(({ order, ...c }) => c) }));
 }
 
-const exportStages = stages => csv(HEAD_A, stages.flatMap(s => s.members.map((m, i) => ({
+export const exportStages = stages => csv(HEAD_A, stages.flatMap(s => s.members.map((m, i) => ({
   stage_id: s.id, stage_name_en: s.name, stage_name_ja: s.name, ...dateParts(s.date), member_id: `${s.id}-${i}`,
   name_en: m.name, name_ja: m.name, oshi_mark: m.mark, color_key: m.color_key, color_hex: m.hex,
   ...Object.fromEntries(OSHI_COLS.map((k, j) => [k, m.oshiColors?.[j] || ''])), surprise: m.surprise ? 'yes' : 'no' }))));
-const exportPenlights = pens => csv(HEAD_B, pens.flatMap(p => p.colors.map((c, i) => ({
+export const exportPenlights = pens => csv(HEAD_B, pens.flatMap(p => p.colors.map((c, i) => ({
   penlight_id: p.id, penlight_name: p.name, order: i + 1, color_key: c.color_key, color_name_en: c.name, color_name_ja: c.name, color_hex: c.hex }))));
 
 // ---------- files: the same CSV as tables a / b, so a spreadsheet or text editor can make them ----------
 // A file with penlight_id / order columns is a penlight table, anything else a live table.
-const BOM = String.fromCharCode(0xfeff);
+export const BOM = String.fromCharCode(0xfeff);
 const firstLine = text => text.replace(BOM, '').split(/\r?\n/)[0];
-const isPenlightCsv = text => /\b(penlight_id|order)\b/.test(firstLine(text)) && !/\bstage_id\b/.test(firstLine(text));
+export const isPenlightCsv = text => /\b(penlight_id|order)\b/.test(firstLine(text)) && !/\bstage_id\b/.test(firstLine(text));
 
 // Excel opens UTF-8 CSV correctly only with a BOM.
-function download(name, text) {
+export function download(name, text) {
   const url = URL.createObjectURL(new Blob([BOM + text], { type: 'text/csv;charset=utf-8' }));
   const a = h('a', { href: url, download: name });
   document.body.append(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
-const today = () => new Date().toISOString().slice(0, 10).replace(/-/g, '');
+export const today = () => new Date().toISOString().slice(0, 10).replace(/-/g, '');
 
 // built-in data -> an editable user copy (the original stays as it is)
 function copyBuiltInStage(id) {
@@ -144,8 +146,19 @@ const hexOf = (v, key) => (/^#?[0-9a-f]{6}$/i.test(v || '') ? (v.startsWith('#')
 export const p18 = {
   id: 18,
   debug: true,
-  render(root) {
+  render(root, { go }) {
     let tab = 'live';
+
+    // The CSV editor (every column, like a spreadsheet) is an add-on: open it, or get it on the About page.
+    function csvCard() {
+      const body = h('div', { class: 'stack' }, h('p', { class: 'fine' }, '…'));
+      addonInfo().then(info => body.replaceChildren(
+        h('p', { class: 'fine' }, t(info ? 'csv.cardInstalled' : 'csv.cardIntro')),
+        info ? h('button', { class: 'btn', onclick: () => go(19) }, '📊 ' + t('csv.openEditor'))
+          : h('button', { class: 'btn ghost', onclick: () => goInstall(go) }, '⬇ ' + t('csv.toAbout')),
+        h('p', { class: 'fine' }, t('csv.removeWhere'))));
+      return h('div', { class: 'card stack' }, h('h3', null, '📊 ' + t('page.19')), body);
+    }
 
     const save = (fn, msg = t('common.saved')) => { const d = getUserData(); fn(d); saveUserData(d); toast(msg); };
 
@@ -194,6 +207,7 @@ export const p18 = {
       const draft = getDraft();
       root.replaceChildren(h('div', { class: 'page stack' },
         h('p', { class: 'fine' }, t('ed.intro')),
+        csvCard(),
         h('p', { class: 'fine' }, '💾 ' + t('ed.autosaveNote')),
         draft?.data ? h('div', { class: 'card stack ed-draft' },
           h('strong', null, t('ed.draftFound', { name: draft.data.name || '—', time: draft.savedAt ? new Date(draft.savedAt).toLocaleString(currentLang()) : '' })),

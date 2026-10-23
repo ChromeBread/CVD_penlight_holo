@@ -1,6 +1,7 @@
 // Page 13: please post with the hashtag, debug switch, app info, updates / cache, credits, thanks.
 import { h, t, APP, isDebug, setDebug, currentLang, formatSize, formatDate, toast } from '../core.js';
-import { DB, getUserData, saveUserData, getDraft, saveDraft, clearDraft } from '../data.js';
+import { DB, getUserData, saveUserData, getDraft, saveDraft, clearDraft, getCsvDraft, saveCsvDraft, clearCsvDraft } from '../data.js';
+import { CSV_EDITOR, addonInfo, installAddon, removeAddon, latestSizes } from '../addon.js';
 import { listImages, deleteImage, clearImages, exportImages, importImages } from '../images.js';
 import { toggle } from '../ui.js';
 
@@ -12,7 +13,7 @@ const versionOf = name => name.replace(/^cvdph-/, '');
 // (data updates and images opened later change the current amount).
 async function cachedInfo() {
   try {
-    const name = (await caches.keys()).find(k => k.startsWith('cvdph-'));
+    const name = (await caches.keys()).find(k => k.startsWith('cvdph-') && !k.startsWith('cvdph-addon-'));
     if (!name) return null;
     const c = await caches.open(name);
     const r = await c.match('cache-info.json');
@@ -35,37 +36,68 @@ async function latestVersion() {
 }
 
 // Settings live in localStorage and are kept; only the saved pages are removed.
+// The service worker is kept (unregistering left it half-alive and nothing was saved again):
+// after the reload the app sees its copy is missing and has it downloaded fresh (app.js).
 async function clearCache() {
   if (!confirm(t('p13.clearConfirm'))) return;
   try {
-    for (const reg of await navigator.serviceWorker?.getRegistrations?.() || []) await reg.unregister();
-    for (const k of await caches.keys()) if (k.startsWith('cvdph-')) await caches.delete(k);
-  } catch { /* nothing saved */ }
+    // add-ons stay: the fresh app download refreshes them too
+    for (const k of await caches.keys()) if (k.startsWith('cvdph-') && !k.startsWith('cvdph-addon-')) await caches.delete(k);
+    await (await navigator.serviceWorker?.getRegistration?.())?.update();   // a newer version installs itself
+  } catch { /* nothing saved / offline */ }
+  try { sessionStorage.setItem('cvdph.cleared', '1'); } catch { /* ignore */ }
   location.reload();
 }
+
+const lines = list => list.filter(Boolean).flatMap((x, i) => (i ? [h('br'), x] : [x]));
 
 function updateSection() {
   const saved = h('p', null, '…');
   const sizes = h('p', { class: 'fine' });
   const status = h('p', { class: 'fine', 'aria-live': 'polite' });
-  cachedInfo().then(c => {
-    saved.textContent = c ? t('p13.cached', { v: c.version, at: c.savedAt ? fmtTime(c.savedAt) : '—' }) : t('p13.notCached');
-    if (!c) return;
-    sizes.replaceChildren(...[
-      c.downloaded ? t('p13.size', { size: formatSize(c.downloaded.bytes), n: c.downloaded.files }) : null,
-      t('p13.sizeNow', { size: formatSize(c.now.bytes), n: c.now.files }),
-    ].filter(Boolean).flatMap((x, i) => (i ? [h('br'), x] : [x])));
-  });
+  // after "clear cache": say how much the fresh copy took, once it is saved
+  let cleared = false;
+  try { cleared = sessionStorage.getItem('cvdph.cleared') === '1'; } catch { /* ignore */ }
+  const reloaded = cleared ? h('p', { class: 'ok-note', 'aria-live': 'polite' }, '🧹 ' + t('p13.reloaded')) : null;
+  function refresh() {
+    cachedInfo().then(c => {
+      saved.textContent = c ? t('p13.cached', { v: c.version, at: c.savedAt ? fmtTime(c.savedAt) : '—' }) : t('p13.notCached');
+      if (!c) return;
+      sizes.replaceChildren(...lines([
+        c.downloaded ? t('p13.size', { size: formatSize(c.downloaded.bytes), n: c.downloaded.files }) : null,
+        t('p13.sizeNow', { size: formatSize(c.now.bytes), n: c.now.files }),
+      ]));
+      if (reloaded && c.downloaded && c.version === APP.version) {
+        reloaded.textContent = '🧹 ' + t('p13.reloadedSize', { v: c.version, size: formatSize(c.downloaded.bytes), n: c.downloaded.files });
+        try { sessionStorage.removeItem('cvdph.cleared'); } catch { /* ignore */ }
+      }
+    });
+  }
+  refresh();
+  // the service worker tells when the new copy is saved
+  const onMsg = e => {
+    if (!saved.isConnected) { navigator.serviceWorker.removeEventListener('message', onMsg); return; }
+    if (e.data?.source === 'cvdph-sw' && e.data.type === 'done') refresh();
+  };
+  navigator.serviceWorker?.addEventListener('message', onMsg);
+
   const check = async () => {
     status.textContent = '…';
     try {
       const v = await latestVersion();
       if (!v) throw new Error('no version');
-      status.textContent = v === APP.version ? t('p13.latest', { v }) : t('p13.newer', { v });
+      const head = v === APP.version ? t('p13.latest', { v }) : t('p13.newer', { v });
+      let size = null;
+      try {
+        const s = await latestSizes();
+        size = t('p13.expected', { size: formatSize(s.app.bytes), n: s.app.files });
+      } catch { /* sizes unknown: the version is still shown */ }
+      status.replaceChildren(...lines([head, size]));
     } catch { status.textContent = t('p13.checkFail'); }
   };
   return h('div', { class: 'card stack' },
     h('h2', null, t('p13.update')),
+    reloaded,
     saved, sizes,
     h('div', { class: 'row' }, h('button', { class: 'btn ghost', onclick: check }, '🔄 ' + t('p13.check'))),
     status,
@@ -85,7 +117,7 @@ function saveFile(name, text) {
 
 async function backup() {
   const b = { format: 'cvdph-backup', version: APP.version, savedAt: new Date().toISOString(),
-    userdata: getUserData(), draft: getDraft(), images: await exportImages() };
+    userdata: getUserData(), draft: getDraft(), csvDraft: getCsvDraft(), images: await exportImages() };
   saveFile(`cvdph-backup-${stamp()}.json`, JSON.stringify(b));
 }
 
@@ -100,10 +132,11 @@ async function restore(file) {
   saveUserData(u);
   await importImages(b.images);
   if (b.draft?.data && !getDraft()) saveDraft(b.draft);
+  if (b.csvDraft?.doc && !getCsvDraft()) saveCsvDraft(b.csvDraft);
 }
 
 function dataSection() {
-  const u = getUserData(), imgs = listImages(), draft = getDraft();
+  const u = getUserData(), imgs = listImages(), draft = getDraft(), csvDraft = getCsvDraft();
   const refresh = () => box.replaceWith(dataSection());
   const del = (name, fn) => async () => {
     if (!confirm(t('p13.data.delConfirm', { name }))) return;
@@ -124,6 +157,7 @@ function dataSection() {
     if (!confirm(t('p13.data.allConfirm'))) return;
     saveUserData({ stages: [], penlights: [] });
     clearDraft();
+    clearCsvDraft();
     try { await clearImages(); } catch { /* no image store */ }
     toast(t('p13.data.cleared')); refresh();
   };
@@ -133,7 +167,10 @@ function dataSection() {
     group(t('ld.lives'), u.stages.map(s => item(s.name, s.date ? formatDate(s.date) : '', drop('stages', s.id)))),
     group(t('ld.penlights'), u.penlights.map(p => item(p.name, t('ld.colors', { n: p.colors.length }), drop('penlights', p.id)))),
     group(t('p13.data.images'), imgs.map(i => item(i.label || i.key, i.size ? formatSize(i.size) : t('p13.data.urlOnly'), () => deleteImage(i.key)))),
-    group(t('p13.data.draft'), draft?.data ? [item(draft.data.name || '—', draft.savedAt ? fmtTime(draft.savedAt) : '', clearDraft)] : []),
+    group(t('p13.data.draft'), [
+      draft?.data ? item(draft.data.name || '—', `${t('page.18')} · ${draft.savedAt ? fmtTime(draft.savedAt) : ''}`, clearDraft) : null,
+      csvDraft?.doc ? item(csvDraft.doc.name || '—', `${t('page.19')} · ${csvDraft.savedAt ? fmtTime(csvDraft.savedAt) : ''}`, clearCsvDraft) : null,
+    ].filter(Boolean)),
     input,
     h('div', { class: 'row' },
       h('button', { class: 'btn', onclick: () => backup().then(() => toast(t('p13.data.backedUp')), () => toast(t('p13.data.backupFail'))) }, '💾 ' + t('p13.data.backup')),
@@ -142,9 +179,54 @@ function dataSection() {
   return box;
 }
 
+// ---------- debug: the CSV editor add-on (download with progress, sizes, delete) ----------
+function addonSection(go) {
+  const box = h('div', { class: 'card stack', id: 'addon-csv' });
+  const fill = h('div', { class: 'save-fill' });
+  const bar = h('div', { class: 'dl-bar', role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', hidden: true },
+    h('span', { class: 'fine dl-label' }), h('div', { class: 'save-track' }, fill));
+  const expected = h('p', { class: 'fine' }, '…');
+  latestSizes().then(s => {
+    const a = s.addons?.[CSV_EDITOR.id];
+    expected.textContent = a ? t('p13.addon.expected', { size: formatSize(a.bytes), n: a.files }) : t('p13.addon.offline');
+  }, () => { expected.textContent = t('p13.addon.offline'); });
+
+  async function draw() {
+    const info = await addonInfo();
+    const state = info
+      ? h('p', null, '✓ ' + t('p13.addon.installed', { size: formatSize(info.bytes), n: info.files, at: info.savedAt ? fmtTime(info.savedAt) : '—' }))
+      : h('p', null, t('p13.addon.notInstalled'));
+    const install = async () => {
+      bar.hidden = false;
+      const label = bar.querySelector('.dl-label');
+      try {
+        await installAddon(CSV_EDITOR, ({ done, total, bytes }) => {
+          fill.style.transform = `scaleX(${total ? done / total : 0})`;
+          bar.setAttribute('aria-valuenow', String(Math.round((total ? done / total : 0) * 100)));
+          label.textContent = t('p13.addon.progress', { done, total, size: formatSize(bytes) });
+        }, APP.version);
+        toast(t('p13.addon.done'));
+      } catch { toast(t('p13.addon.fail')); }
+      bar.hidden = true;
+      draw();
+    };
+    box.replaceChildren(...[
+      h('h2', null, '📊 ' + t('page.19')),
+      h('p', { class: 'fine' }, t('p13.addon.note')),
+      state, info ? null : expected, bar,
+      h('div', { class: 'row' },
+        info ? h('button', { class: 'btn', onclick: () => go(19) }, '📊 ' + t('csv.openEditor')) : h('button', { class: 'btn', onclick: install }, '⬇ ' + t('p13.addon.install')),
+        info ? h('button', { class: 'btn ghost', onclick: install }, '🔄 ' + t('p13.addon.reinstall')) : null,
+        info ? h('button', { class: 'btn ghost', onclick: async () => { if (confirm(t('p13.addon.removeConfirm'))) { await removeAddon(); toast(t('p13.addon.removed')); draw(); } } }, '🗑 ' + t('p13.addon.remove')) : null),
+      h('p', { class: 'fine' }, t('p13.addon.keep'))].filter(Boolean));
+  }
+  draw();
+  return box;
+}
+
 export default {
   id: 13,
-  render(root) {
+  render(root, { go }) {
     const contributors = DB.contributors.filter(c => c.name);
     root.append(h('div', { class: 'page stack' },
       h('div', { class: 'card' }, h('p', null, t('p13.hashtag', { tag: APP.hashtag }))),
@@ -157,6 +239,7 @@ export default {
         h('dt', null, t('p13.build')), h('dd', null, APP.build)),
       updateSection(),
       isDebug() ? dataSection() : null,
+      isDebug() ? addonSection(go) : null,
       h('h2', null, t('p13.credits')),
       h('dl', { class: 'kv' },
         h('dt', null, t('p13.author')), h('dd', null, APP.author),
@@ -167,5 +250,9 @@ export default {
         h('dt', null, t('p13.you')), h('dd', null, t('p13.youText'))),
       h('p', { class: 'thanks' }, t('p13.thanks')),
       h('p', { class: 'fine' }, t('common.unofficial'))));
+    // page 18 / 19 sent us here to get the CSV editor
+    let focus = null;
+    try { focus = sessionStorage.getItem('cvdph.focus'); sessionStorage.removeItem('cvdph.focus'); } catch { /* ignore */ }
+    if (focus === 'addon') requestAnimationFrame(() => document.getElementById('addon-csv')?.scrollIntoView({ block: 'center' }));
   },
 };
